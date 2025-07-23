@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- 设置文档字符编码为UTF-8 -->
+    <meta charset="UTF-8">
+    <!-- 设置视口以适应不同设备的屏幕 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="beta2.0.css">
+    <style>
+            /* 定义自定义属性 */
+@property --_w {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 100vw;
+}
+
+@property --_h {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 100vh;
+}
+
+/* 使用自定义属性 */
+@keyframes resize {
+    from {
+        --_w: 50vw;
+        --_h: 50vh;
+    }
+    to {
+        --_w: 100vw;
+        --_h: 100vh;
+    }
+}
+
+.my-element {
+    width: var(--_w);
+    height: var(--_h);
+    animation: resize 2s infinite alternate;
+}
+
+        body {
+            white-space: nowrap;
+            margin: 0; /* 移除默认的边距 */
+            padding: 0; /* 移除默认的内边距 */
+            /* 设置背景颜色为白色 */
+            background-color: #000000;
+            /* 设置字体为微软雅黑 */
+            font-family: "Microsoft YaHei", sans-serif;
+            font-family: Euclid,sans-serif,Arial,BlinkMacSystemFont,Segoe UI,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue;
+        }
+
+        /* 定义glass-card样式 */
+        .glass-card {
+            position:fixed; 
+            width:  calc(var(--_w) * 0.3) ; /* 设置卡片宽度为240像素 */
+            height: calc(var(--_h) * 0.3); /* 设置卡片高度为330像素 */
+            background: rgba(255, 255, 255, 0.1); /* 设置背景颜色为半透明白色 */
+            backdrop-filter: blur(2px); /* 背景模糊效果 */
+            -webkit-backdrop-filter: blur(2px); /* 为WebKit内核浏览器设置背景模糊效果 */
+            border-radius: 100px; /* 设置边框圆角为20像素 */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* 设置边框为半透明白色 */
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.1), /* 外阴影效果 */
+                inset 0 1px 0 rgba(255, 255, 255, 0.5), /* 内阴影效果 */
+                inset 0 -1px 0 rgba(255, 255, 255, 0.1), /* 反向内阴影效果 */
+                inset 0 0 0px 0px rgba(255, 255, 255, 0); /* 内阴影效果，此处值为0 */
+            position: relative; /* 设置定位方式为相对定位 */
+            overflow: hidden; /* 隐藏超出卡片范围的内容 */
+            /* 卡片内容样式 */
+            display: flex; /* 设置为flex布局 */
+            flex-direction: column; /* 设置flex方向为垂直 */
+            justify-content: center; /* 设置内容居中 */
+            align-items: center; /* 设置内容居中 */
+            text-align: center; /* 设置文本居中 */
+            font-size: 1.2rem; /* 设置字体大小为1.2rem */
+            color: #333; /* 设置字体颜色为黑色 */
+            line-height: 1.5; /* 设置行高为1.5 */
+            
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /*始终浮动居中*/
+            /*浮动居中于屏幕中间*/
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); 
+            /* 设置层级为0 */
+            z-index: 0;
+            transition: transform 0.2s; /* 线性过渡效果 */
+
+            
+
+        }
+
+        /* 定义glass-card伪元素:before样式 */
+        .glass-card::before {
+            content: ''; /* 必须设置content以显示伪元素 */
+            position: absolute; /* 设置绝对定位 */
+            top: 0; /* 定位到顶部 */
+            left: 0; /* 定位到左侧 */
+            right: 0; /* 定位到右侧 */
+            height: 1px; /* 设置高度为1像素 */
+            background: linear-gradient(
+                90deg, /* 渐变方向为水平 */
+                transparent, /* 透明开始 */
+                rgba(255, 255, 255, 0.6), /* 中间为半透明白色 */
+                transparent /* 透明结束 */
+            );
+        }
+
+        /* 定义glass-card伪元素:after样式 */
+        .glass-card::after {
+            content: ''; /* 必须设置content以显示伪元素 */
+            position: absolute; /* 设置绝对定位 */
+            top: 0; /* 定位到顶部 */
+            left: 0; /* 定位到左侧 */
+            width: 1px; /* 设置宽度为1像素 */
+            height: 100%; /* 设置高度为100%，即覆盖整个卡片高度 */
+            background: linear-gradient(
+                180deg, /* 渐变方向为垂直 */
+                rgba(255, 255, 255, 0.8), /* 顶部为白色 */
+                transparent, /* 中间透明 */
+                rgba(255, 255, 255, 0.3) /* 底部为半透明白色 */
+            );
+        }
+
+
+
+
+
+.glass-card:hover {
+    transform: translate(-50%, -50%) scale(1.4); /* 同时移动至屏幕中心并放大卡片 */
+}
+
+    </style>
+<body>
+    <div>
+        <p style="font-size: 50px; color: #fff; text-align: center;">Half a Life 2</p>
+        <p style="font-size: 50px; color: #fff; text-align: center;">Half a Life 2</p>
+                <p style="font-size: 50px; color: #fff; text-align: center;">Half a Life 2</p>
+                <p style="font-size: 50px; color: #fff; text-align: center;">Half a Life 2</p>
+                <p style="font-size: 50px; color: #fff; text-align: center;">Half a Life 2</p>
+                <p style="font-size: 50px; color: #fff; text-align: center;">Half a Life 2</p>
+                <p style="font-size: 50px; color: #fff; text-align: center;">Half a Life 2</p>
+                <p style="font-size: 50px; color: #fff; text-align: center;">Half a Life 2</p>
+        <p style="font-size: 50px; color: #fff; text-align: center;">Half a Life 2</p>
+    </div>
+    <!-- 创建一个glass-card类的div元素 -->
+    <div class="glass-card"></div>
+</body>
+</html>
+
