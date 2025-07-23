@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        
+@property --_w {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 100vw; 
+}
+
+@property --_h {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 100vh; 
+}
+
+
+/* 设置html和body的基本样式 */
+html, body {
+    height: 100%;
+    min-height: 500vh;
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    overflow-x: hidden;
+    background-color: rgb(128, 236, 236);
+}
+
+/* 背景样式 */
+.bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+}
+
+/* 确保背景图片在背景容器中充满且没有空白 */
+.bg img {
+    width: 100%;
+    display: block;
+}
+
+/* 中心圆形按钮样式 */
+.glass {
+    position: fixed;
+    inset: 50% auto auto 50%;
+    transform: translate(-50%, -50%);
+    width: calc(var(--_w) * 0.1);
+    height: calc(var(--_w) * 0.1);
+    border-radius: 25%;
+    background: rgba(255, 255, 255, .08);
+    border: 2px solid transparent;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .6), 0 16px 32px rgba(0, 0, 0, .12);
+    backdrop-filter: url(#frosted);
+    -webkit-backdrop-filter: url(#frosted); /* 兼容性处理 */
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    outline: 0; /* 移除焦点时的默认蓝色边框 */
+    transition-duration: 0.3s;
+}
+
+.glass:hover{
+    width: calc(var(--_w) * 0.15);
+    height: calc(var(--_w) * 0.15);
+    
+}
+
+@keyframes moveBackground {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+    </style>
+</head>
+<body>
+
+    <button id="btn" class="glass"></button>
+
+    <svg style="position:absolute;width:0;height:0">
+        <filter id="frosted" primitiveUnits="objectBoundingBox">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="0.02" result="blur"/>
+            <feDisplacementMap id="disp" in="blur" in2="map" scale="1" xChannelSelector="R" yChannelSelector="G">
+                <animate attributeName="scale" to="1.4" dur="0.3s" begin="btn.mouseover" fill="freeze"/>
+                <animate attributeName="scale" to="1" dur="0.3s" begin="btn.mouseout" fill="freeze"/>
+            </feDisplacementMap>
+        </filter>
+    </svg>
+</body>
+</html>
