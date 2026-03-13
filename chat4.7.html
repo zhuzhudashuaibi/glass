@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gemini 3.1 Pro | 极简绿意工作台</title>
+    <!-- 引入 Phosphor Icons 图标库 -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --bg-color: #f2faf5; 
+            --text-main: #143d28;
+            --text-sub: #4a6658;
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --glass-edge: rgba(0, 70, 40, 0.12);
+            --glass-shadow: rgba(0, 40, 20, 0.1);
+            --accent: #10b981;
+            --shape1: #86efac; --shape2: #6ee7b7; --shape3: #d1fae5;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #000000;
+            --text-main: #ffffff;
+            --text-sub: #a1a1aa;
+            --glass-bg: rgba(20, 30, 25, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-edge: rgba(255, 255, 255, 0.05);
+            --glass-shadow: rgba(0, 0, 0, 0.6);
+            --accent: #34d399;
+            --shape1: #064e3b; --shape2: #065f46; --shape3: #022c22;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* --- 动态背景 --- */
+        .bg-blur { position: absolute; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
+        .shape {
+            position: absolute; filter: blur(100px); border-radius: 50%; opacity: 0.7;
+            animation: move 20s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
+        }
+        @keyframes move {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(15%, 10%) scale(1.2); }
+        }
+        .s1 { width: 600px; height: 600px; background: var(--shape1); top: -200px; left: -100px; }
+        .s2 { width: 500px; height: 500px; background: var(--shape2); bottom: -150px; right: -100px; animation-delay: -5s; }
+        .s3 { width: 400px; height: 400px; background: var(--shape3); top: 30%; left: 30%; animation-delay: -10s; }
+
+        /* --- 毛玻璃通用组件 --- */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border); outline: 1px solid var(--glass-edge);
+            box-shadow: 0 10px 40px -10px var(--glass-shadow); border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* --- 顶部导航栏 --- */
+        header {
+            position: fixed; top: 20px; left: 20px; right: 20px; height: 70px;
+            padding: 0 25px; display: flex; justify-content: space-between; align-items: center; z-index: 1100;
+        }
+        .logo { font-weight: 800; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .nav-items { display: flex; gap: 10px; }
+        .nav-items a, .icon-btn {
+            text-decoration: none; color: var(--text-main); font-size: 0.9rem; font-weight: 600;
+            padding: 10px 18px; border-radius: 15px; display: flex; align-items: center; gap: 6px; cursor: pointer;
+        }
+        .icon-btn { width: 44px; height: 44px; padding: 0; justify-content: center; border-radius: 50%; }
+
+        /* --- 侧边栏 (告示栏) --- */
+        .sidebar-container {
+            position: fixed; top: 110px; left: 20px; bottom: 20px; width: 280px; z-index: 1050;
+            transition: transform 0.6s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        /* PC 端收起逻辑：位移 100% 但通过 calc 保留按钮位置 */
+        .sidebar-container.collapsed { transform: translateX(calc(-100% + 15px)); }
+        
+        .sidebar { height: 100%; padding: 25px; display: flex; flex-direction: column; gap: 20px; position: relative; }
+        
+        /* 核心修复：收起/展开按钮 */
+        .toggle-tab {
+            position: absolute; right: -20px; top: 50%; transform: translateY(-50%);
+            width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; z-index: 1060;
+            background: var(--accent); color: white; border: 3px solid var(--bg-color);
+        }
+
+        /* --- 正文区域 --- */
+        .main-content {
+            margin-top: 110px; margin-left: 320px; margin-right: 20px;
+            height: calc(100vh - 130px); overflow-y: auto;
+            display: flex; flex-direction: column; gap: 20px;
+            transition: margin-left 0.6s cubic-bezier(0.32, 0.72, 0, 1);
+            padding-bottom: 20px;
+        }
+        .sidebar-container.collapsed + .main-content { margin-left: 55px; }
+
+        .card { padding: 40px; flex-shrink: 0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+        .grid-item { padding: 25px; }
+        .grid-item i { font-size: 2rem; color: var(--accent); margin-bottom: 15px; display: block; }
+
+        /* --- 移动端遮罩 --- */
+        .overlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; 
+            backdrop-filter: blur(4px); opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        .overlay.active { opacity: 1; pointer-events: auto; }
+
+        /* ==========================================
+           📱 移动端适配 (核心优化)
+           ========================================== */
+        @media (max-width: 768px) {
+            header { top: 15px; left: 15px; right: 15px; height: 60px; padding: 0 15px; }
+            .nav-items a span { display: none; }
+            
+            /* 侧边栏：悬浮在导航栏下方，不遮挡 */
+            .sidebar-container { 
+                top: 85px; left: 15px; bottom: 15px; 
+                width: calc(100vw - 30px); max-width: 320px; 
+                transform: translateX(calc(-100% - 30px)); 
+                z-index: 1050;
+            }
+            .sidebar-container.active { transform: translateX(0); }
+            .sidebar-container.collapsed { transform: translateX(calc(-100% - 30px)); }
+            
+            .toggle-tab { display: none; } /* 移动端使用菜单按钮控制 */
+            .mobile-menu-btn { display: flex !important; }
+
+            .main-content { margin-left: 15px; margin-right: 15px; margin-top: 90px; height: calc(100vh - 105px); }
+            .sidebar-container.collapsed + .main-content { margin-left: 15px; }
+        }
+
+        .mobile-menu-btn { display: none; }
+
+        /* 动画 */
+        .reveal { opacity: 0; transform: translateY(20px); animation: revealIn 0.6s ease forwards; }
+        @keyframes revealIn { to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="overlay"></div>
+    <div class="bg-blur"><div class="shape s1"></div><div class="shape s2"></div><div class="shape s3"></div></div>
+
+    <header class="glass">
+        <div class="logo"><i class="ph-fill ph-leaf" style="color: var(--accent);"></i><span>GEMINI 3.1</span></div>
+        <div class="nav-items">
+            <a href="#" class="glass"><i class="ph-bold ph-house"></i><span>首页</span></a>
+            <a href="#" class="glass"><i class="ph-bold ph-cube"></i><span>模型</span></a>
+            <div id="theme-btn" class="icon-btn glass"><i class="ph-bold ph-moon"></i></div>
+            <!-- 移动端触发按钮 -->
+            <div id="menu-open" class="icon-btn glass mobile-menu-btn"><i class="ph-bold ph-list"></i></div>
+        </div>
+    </header>
+
+    <div class="sidebar-container" id="sidebar">
+        <aside class="sidebar glass">
+            <div style="background: rgba(0,0,0,0.05); padding: 15px; border-radius: 15px;">
+                <p style="font-size: 0.8rem; font-weight: 600;">量子算力负载</p>
+                <div style="height: 6px; background: rgba(0,0,0,0.1); border-radius: 3px; margin-top: 8px; overflow: hidden;">
+                    <div style="width: 42%; height: 100%; background: var(--accent);"></div>
+                </div>
+            </div>
+            </div>
+            <div style="margin-top: auto; font-size: 0.75rem; color: var(--text-sub);">
+                <
+            </div>
+            <!-- PC 端切换按钮：始终可见 -->
+            <div class="toggle-tab" id="sidebar-toggle">
+                <i class="ph-bold ph-caret-left" id="caret"></i>
+            </div>
+        </aside>
+    </div>
+
+    <main class="main-content">
+        <section class="card glass reveal">
+            <h1 style="font-size: 2rem; margin-bottom: 10px;">欢迎使用 Pro 级工作台</h1>
+            <p style="color: var(--text-sub); line-height: 1.6;">
+                我们修复了 UI 逻辑：在 PC 端，即使侧边栏收起，呼出按钮也会优雅地留在边缘；在移动端，侧边栏现在会从导航栏下方滑出，确保操作互不干扰。
+            </p>
+        </section>
+
+        <div class="grid">
+            <div class="grid-item glass reveal" style="animation-delay: 0.1s;">
+                <i class="ph-bold ph-lightning"></i>
+                <h3>深度推理</h3>
+                <p style="font-size: 0.85rem; color: var(--text-sub);">Pro 模型专为处理最棘手的逻辑链路而设计。</p>
+            </div>
+            <div class="grid-item glass reveal" style="animation-delay: 0.2s;">
+                <i class="ph-bold ph-shield-check"></i>
+                <h3>安全沙盒</h3>
+            </div>
+            <div class="grid-item glass reveal delay-1">
+                <i class="ph-bold ph-intersect"></i>
+                <h3>多模态对齐</h3>
+                <p style="font-size: 0.85rem; margin-top: 10px; color: var(--text-sub);">无缝理解视觉、音频与代码流，实现真正意义上的全感官 AI 协同。</p>
+            </div>
+            <div class="grid-item glass reveal delay-1">
+                <i class="ph-bold ph-wind"></i>
+                <h3>极速响应</h3>
+                <p style="font-size: 0.85rem; margin-top: 10px; color: var(--text-sub);">得益于全新的 Flash-Attention 3 优化，即使是 Pro 模型也能在毫秒间启动。</p>
+            </div>
+                
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const caret = document.getElementById('caret');
+        const themeBtn = document.getElementById('theme-btn');
+        const menuOpen = document.getElementById('menu-open');
+        const overlay = document.getElementById('overlay');
+        const html = document.documentElement;
+
+        // PC 端收起逻辑
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            if(sidebar.classList.contains('collapsed')) {
+                caret.classList.replace('ph-caret-left', 'ph-caret-right');
+            } else {
+                caret.classList.replace('ph-caret-right', 'ph-caret-left');
+            }
+        });
+
+        // 移动端打开逻辑
+        menuOpen.addEventListener('click', () => {
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+        });
+
+        // 点击遮罩关闭
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+
+        // 主题切换
+        themeBtn.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                themeBtn.innerHTML = '<i class="ph-bold ph-moon"></i>';
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                themeBtn.innerHTML = '<i class="ph-bold ph-sun"></i>';
+            }
+        });
+    </script>
+</body>
+</html>
