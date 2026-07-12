@@ -2,7 +2,7 @@ html,body{
     width: 100%;
     height: 100%;
     justify-content: center;
-    background: linear-gradient(#ffffff,#000000);
+    background-color: white;
 }
 #divhtml{
     height: 100%;
