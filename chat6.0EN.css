@@ -135,6 +135,39 @@ body {
 /*
  * 灵动岛内部微弱高光。
  */
+html.wechat-android #head {
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.82),
+            rgba(255, 255, 255, 0.52)
+        );
+
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+
+    border: 1px solid rgba(255, 255, 255, 0.95);
+
+    box-shadow:
+        inset 1px 1px 1px rgba(255, 255, 255, 1),
+        inset -1px -1px 2px rgba(255, 255, 255, 0.45),
+        inset 0 -5px 12px rgba(255, 255, 255, 0.22),
+        0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
+html.wechat-android .nav-list a {
+    background: transparent;
+
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+
+    border: 1px solid rgba(255, 255, 255, 0.75);
+
+    box-shadow:
+        inset 1px 1px 1px rgba(255, 255, 255, 0.95),
+        inset -1px -1px 1px rgba(255, 255, 255, 0.3),
+        0 2px 6px rgba(0, 0, 0, 0.08);
+}
 #head::before {
     content: "";
 
