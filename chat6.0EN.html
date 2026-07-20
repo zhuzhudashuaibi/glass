@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width,
+                initial-scale=1,
+                maximum-scale=1,
+                user-scalable=no,
+                viewport-fit=cover"
+    >
+
+    <title>液态玻璃灵动岛</title>
+
+    <link rel="stylesheet" href="chat6.0.css">
+</head>
+
+<body>
+
+    <main id="page">
+        <h1>页面内容</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+        <h1>zhuzhu2012</h1>
+    </main>
+
+    <nav
+        id="head"
+        class="lggc"
+        aria-label="主导航"
+        aria-expanded="false"
+    >
+        <div class="nav-list">
+            <a href="#home">
+                <span>首页</span>
+            </a>
+
+            <a href="#about">
+                <span>关于</span>
+            </a>
+
+            <a href="#service">
+                <span>服务</span>
+            </a>
+
+            <a href="#contact">
+                <span>联系</span>
+            </a>
+        </div>
+    </nav>
+
+    <script>
+        (function () {
+            var ua = navigator.userAgent || "";
+            var isAndroid = /Android/i.test(ua);
+            var isWeChat = /MicroMessenger/i.test(ua);
+
+            var head = document.getElementById("head");
+            var closeTimer = null;
+
+            /*
+             * 安卓微信中关闭高开销的毛玻璃，
+             * 避免 WebView 动画出现明显卡顿。
+             */
+            if (isAndroid && isWeChat) {
+                document.documentElement.classList.add("wechat-android");
+            }
+
+            function openHead() {
+                clearTimeout(closeTimer);
+
+                head.classList.remove("is-closing");
+                head.classList.add("is-active");
+                head.setAttribute("aria-expanded", "true");
+            }
+
+            function closeHead() {
+                if (!head.classList.contains("is-active")) {
+                    return;
+                }
+
+                head.classList.remove("is-active");
+                head.classList.add("is-closing");
+                head.setAttribute("aria-expanded", "false");
+
+                clearTimeout(closeTimer);
+
+                closeTimer = setTimeout(function () {
+                    head.classList.remove("is-closing");
+                }, 700);
+            }
+
+            /*
+             * 初始状态点击灵动岛展开。
+             * 放大后再次点击灵动岛不会收起。
+             */
+            head.addEventListener("click", function () {
+                if (!head.classList.contains("is-active")) {
+                    openHead();
+                }
+            }, false);
+
+            /*
+             * 移动端点击灵动岛外部收起。
+             */
+            document.addEventListener("touchstart", function (event) {
+                if (!head.contains(event.target)) {
+                    closeHead();
+                }
+            }, true);
+
+            /*
+             * 桌面端及部分 WebView 点击灵动岛外部收起。
+             */
+            document.addEventListener("click", function (event) {
+                if (!head.contains(event.target)) {
+                    closeHead();
+                }
+            }, true);
+        })();
+    </script>
+
+</body>
+</html>
