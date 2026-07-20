@@ -371,8 +371,7 @@ body {
  */
 html.wechat-android #head,
 html.wechat-android .nav-list a {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    
 }
 
 /*
