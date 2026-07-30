@@ -67,18 +67,31 @@
 
     <div id="text" >
         <div class="glass" id="t2">
-                <h1>你好</h1>
-                <p>text t4 </p>
+                <h1>To shunliz</h1>
+                <p></p>
+                <p>我们相识在2024.9</p>
+                <p id="turtletime">    
+                    <script>
+                        var date1 = new Date('2023-01-01 00:00:00');
+                        var date2 = new Date();
+                        var diffTime = (date2 - date1) / 1000; // 将毫秒转换为秒
+
+                        var days = Math.floor(diffTime / 86400); // 计算天数
+                        var hours = Math.floor((diffTime % 86400) / 3600); // 计算小时数
+                        var minutes = Math.floor((diffTime % 3600) / 60); // 计算分钟数
+                        var seconds = Math.floor(diffTime % 60); // 计算秒数
+                        document.getElementById("turtletime").innerHTML = "我们已经相识" + days + "天" + hours + "小时" + minutes + "分" + seconds + "秒";
+                    </script>
+                </p>
+                <p>这一路感受过快乐难过</p>
+                <p>也追逐过日升月落</p>
+                <p>你是我耳机里的钟子期</p>
+                <p>也是聊天框里的瓦格纳</p>
+                <p>行至此地 很不容易</p>
+                <p>感谢你一直陪我走到今天</p>
+                <p style="padding-top: 300px;">给你1000部苹果手机<ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon></p>
         </div>
     </div>
-
-    <div id="text" >
-        <div class="glass" id="t2">
-                <h1>你好</h1>
-                <p>text t5 </p>
-        </div>
-    </div>
-
 
 
 
