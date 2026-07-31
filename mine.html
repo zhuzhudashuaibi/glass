@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="glassMy.css">
+    <link rel="stylesheet" href="mine.css">
+    <!-- <script type="module" src="ionicons.designerpack"> </script> -->
+    <script type="module" src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.js"></script>
+    <link href="https://fontsapi.zeoseven.com/522/main/result.css" onload="this.rel='stylesheet'" rel="preload" as="style" crossorigin />
+    <noscript><link rel="stylesheet" href="https://fontsapi.zeoseven.com/522/main/result.css" /></noscript>
+</head>
+<body>
+        <!-- <div id="float">
+        \ </div> -->
+    <div class="" id="head">
+        <div class="glass" id="island">
+            <a href="index1.html" class="green" id="head-a" class="glass" style=":hover{background-color:rgba(100, 255, 123, 0.5);}"><ion-icon name="home-outline" id="icon"></ion-icon></a>
+            <a href="project.html" class="yellow" id="head-a" class="glass" style=":hover background-color:rgba(255, 255, 100, 0.5);"><ion-icon name="grid-outline" id="icon"></ion-icon></a>
+            <a href="mine.html" class="red" id="head-a" class="glass" style=":hover background-color:rgba(255, 100, 100, 0.5);"><ion-icon name="phone-portrait-outline" id="icon"></ion-icon></a>
+        </div>  
+    </div>
+    <!-- 岛写完了 -->
+    <div id="text-first">
+        <div>
+            <h1>个人介绍</h1>
+        </div>
+    </div>
+
+    <div id="text">
+        <div class="glass" id="t1">
+            <h1 style="text-align: center;">身份证</h1>
+            <p>姓名:qiqi</p>
+            <p>用户名:zhuzhu2012</p>
+            <p>全名:zhuzhudashuaibi</p>
+            <p id="age">
+                <script>
+                        var date1 = new Date('2012-06-01 00:00:00');
+                        var date2 = new Date();
+                        var diffTime = (date2 - date1) / 1000; // 将毫秒转换为秒
+
+                        var days = Math.floor(diffTime / 86400); // 计算天数
+                        var years = Math.floor(days / 365);
+                        var day = days - years * 365
+                        var hours = Math.floor((diffTime % 86400) / 3600); // 计算小时数
+                        var minutes = Math.floor((diffTime % 3600) / 60); // 计算分钟数
+                        var seconds = Math.floor(diffTime % 60); // 计算秒数
+                        document.getElementById("age").innerHTML = "年龄:" + years +"年" + day + "天" + hours + "小时" + minutes + "分" + seconds + "秒";
+                </script>
+            </p>
+            <p>性别:男</p>
+            <p>微信号:zhuzhudashuaibi_2012</p>
+            <p>IP: 太阳系地球亚洲中国辽宁省</p>
+        </div>
+    </div>
+
+    <div id="text">
+        <div id="t2">
+            <div class="glass" id="t2-1">
+                <h1 style="text-align: center; margin: 0;"> 
+                    <ion-icon name="heart-outline"></ion-icon>
+                </h1>
+                <p>GAN CUBE</p>
+                <p>csp炸鱼哥</p>
+                <p>ウルトラマン</p>
+                <p>JDM</p>
+                <p>爱搞客制化</p>
+                <p>只跑5分配</p>
+                <p>队长的星光海</p>
+                <p>摄影人机</p>
+            </div>
+            <div class="glass" id="t2-2">
+                <h1 style="text-align: center; margin: 0;">
+                    <ion-icon name="game-controller-outline"></ion-icon>
+                </h1>
+                <p>短剑大手子</p>
+                <p>APEX人机</p>
+                <p>指令师</p>
+                <p>起床1v31</p>
+                <p>奥系5亿战力</p>
+                <p>G胖信徒</p>
+                <P>5星好市民</P>
+                <p>格斗进化重生</p>
+            </div>
+        </div>
+    </div>
+
+    <h1 style="margin-top: 30%; text-align: center;">13940725550</h1>
+
+        <div id="foot"></div>
+</body>
+</html>
