@@ -5,6 +5,7 @@
     <title>Document</title>
     <link rel="stylesheet" href="glassMy.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="wuziqi.css">
     <!-- <script type="module" src="ionicons.designerpack"> </script> -->
     <script type="module" src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.js"></script>
@@ -33,14 +34,14 @@
             
             <h1 id="t3t2">qiqi的小天地</h1>
             
-            <h4 id="t3t3" class="glass">向下滑动了解更多</h4>
+            <h4 id="t3t3" class="glass">向下滑动或点击上方灵动岛</h4>
         </div>
     </div>
 
 
         <div id="text" >
         <div class="glass" id="t1">
-                <h1>网站信息</h1>
+                <h1></h1>
                 <p>本网站使用HTML5+CSS3纯人工制作</p>
                 <h3>0抄袭 0AI</h3>
                 <p>目前只适配移动端(手机) 部分平板可能出现比例问题</p>
@@ -55,24 +56,166 @@
 
     <div id="text" >
         <div class="glass" id="t2">
-            <h1>内容</h1>
-                <p>我会在这里展示一些新的UI</p>
-                <p>和我个人写的一些项目</p>
-                <p>以及一些有趣的功能</p>
-                <p>本人很懒 所以更新会很慢</p>
+            <h1>注释</h1>
+                <p>目前只适配移动端(手机) 部分平板可能出现比例问题</p>
+                <p>部分苹果手机不建议用Safari打开</p>
+                <p>图标为函数绘制 加载稍慢</p>
+                <p>本网站使用HTML5+CSS3纯人工制作</p>
+                <h3>0抄袭 0AI</h3>
+                <p></p>
         </div>
     </div>
 
     <div id="text" >
         <div class="glass" id="t4">
-                <h1>传送门在哪？</h1>
-                <p>请点击上方小药丸</p>
-                <p>出现导航栏后请点击图标</p>
-                <p>没有图标请耐心等待几秒</p>
-                <p>此乃本站灵魂</p>
-                <p>点不开请使用手机自带浏览器</p>
-                <p>长按导航按钮有彩蛋</p>
-        </div>
+                    <!-- ========五子棋组件 开始 直接复制嵌入你的页面======= -->
+            <div id="t4-1">
+                <h1>五子棋(测试版)</h1>
+            </div>
+            <div class="gobang-wrap" >
+
+                <div class="gobang-canvas" id="gobangCanvas">
+                    <div class="gobang-tip" id="gobangTip">黑方先行，请落子</div>
+                    <!-- 棋盘线条由JS自动生成，无需手写 -->
+                </div>
+            </div>
+
+            <script>
+            (function(){
+                const size = 15;    //15*15棋盘
+                const paddingPercent = 4; //和css padding:4% 保持一致
+                const stepPercent = 92 / (size - 1); //网格步长百分比
+
+                const canvasDom = document.getElementById("gobangCanvas");
+                const tipDom = document.getElementById("gobangTip");
+
+                let map = Array(size).fill().map(()=>Array(size).fill(0));
+                let gameOver = false;
+
+                // =========自动绘制横竖棋盘线=========
+                function createBoardLine(){
+                    //横线
+                    for(let i=0;i<size;i++){
+                        const line = document.createElement("div");
+                        line.className = "gobang-line gobang-h-line";
+                        line.style.top = `${paddingPercent + i*stepPercent}%`;
+                        canvasDom.appendChild(line);
+                    }
+                    //竖线
+                    for(let i=0;i<size;i++){
+                        const line = document.createElement("div");
+                        line.className = "gobang-line gobang-v-line";
+                        line.style.left = `${paddingPercent + i*stepPercent}%`;
+                        canvasDom.appendChild(line);
+                    }
+                }
+                createBoardLine();
+
+                // =========点击落子逻辑【核心：纯百分比坐标，永不错位】=========
+                canvasDom.onclick = function(e){
+                    if(gameOver) return;
+                    const rect = canvasDom.getBoundingClientRect();
+
+                    //点击位置转换成相对于画布的百分比
+                    const relX = (e.clientX - rect.left) / rect.width * 100;
+                    const relY = (e.clientY - rect.top) / rect.height * 100;
+
+                    //计算最近交叉点
+                    const x = Math.round((relX - paddingPercent) / stepPercent);
+                    const y = Math.round((relY - paddingPercent) / stepPercent);
+
+                    //边界检测
+                    if(x<0||x>=size||y<0||y>=size||map[y][x]) return;
+
+                    placeChess(x,y,1);
+                    if(checkWin(x,y,1)){
+                        tipDom.innerText = "🎉黑棋胜利！";
+                        gameOver = true;
+                        return;
+                    }
+                    tipDom.innerText = "AI思考中...";
+                    setTimeout(aiPlay,350);
+                }
+
+                //放置棋子，百分比定位
+                function placeChess(x,y,type){
+                    map[y][x] = type;
+                    const chess = document.createElement("div");
+                    chess.className = `gobang-chess ${type===1?'gobang-black':'gobang-white'}`;
+                    chess.style.left = `${paddingPercent + x*stepPercent}%`;
+                    chess.style.top = `${paddingPercent + y*stepPercent}%`;
+                    canvasDom.appendChild(chess);
+                }
+
+                //五子连线判断
+                function checkWin(px,py,player){
+                    const dirs=[[1,0],[0,1],[1,1],[1,-1]];
+                    for(let [dx,dy] of dirs){
+                        let count=1;
+                        for(let s=1;s<5;s++){
+                            let nx=px+dx*s, ny=py+dy*s;
+                            if(nx>=0&&nx<size&&ny>=0&&ny<size&&map[ny][nx]===player) count++;
+                            else break;
+                        }
+                        for(let s=1;s<5;s++){
+                            let nx=px-dx*s, ny=py-dy*s;
+                            if(nx>=0&&nx<size&&ny>=0&&ny<size&&map[ny][nx]===player) count++;
+                            else break;
+                        }
+                        if(count>=5) return true;
+                    }
+                    return false;
+                }
+
+                //简易AI
+                function aiPlay(){
+                    if(gameOver) return;
+                    let best=null;
+                    let maxScore=-9999;
+                    for(let y=0;y<size;y++){
+                        for(let x=0;x<size;x++){
+                            if(map[y][x]) continue;
+                            let score = getScore(x,y,2)*1.1 + getScore(x,y,1);
+                            if(score>maxScore){
+                                maxScore=score;
+                                best={x,y};
+                            }
+                        }
+                    }
+                    placeChess(best.x,best.y,2);
+                    if(checkWin(best.x,best.y,2)){
+                        tipDom.innerText = "😥AI获胜！";
+                        gameOver=true;
+                    }else{
+                        tipDom.innerText = "轮到黑棋落子";
+                    }
+                }
+
+                function getScore(px,py,player){
+                    map[py][px]=player;
+                    let maxLine=0;
+                    const dirs=[[1,0],[0,1],[1,1],[1,-1]];
+                    for(let [dx,dy] of dirs){
+                        let count=1;
+                        for(let s=1;s<5;s++){
+                            let nx=px+dx*s, ny=py+dy*s;
+                            if(nx>=0&&nx<size&&ny>=0&&ny<size&&map[ny][nx]===player) count++;
+                            else break;
+                        }
+                        for(let s=1;s<5;s++){
+                            let nx=px-dx*s, ny=py-dy*s;
+                            if(nx>=0&&nx<size&&ny>=0&&ny<size&&map[ny][nx]===player) count++;
+                            else break;
+                        }
+                        maxLine=Math.max(maxLine,count);
+                    }
+                    map[py][px]=0;
+                    return maxLine;
+                }
+            })();
+            </script>
+            <!-- ========五子棋组件 结束======= -->
+    </div>
     </div>
 
 
