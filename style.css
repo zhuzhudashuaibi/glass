@@ -132,7 +132,7 @@ body{
 #t1{
     background-color: rgba(243, 243, 243, 0.622);
     width: 80%;
-    height: 22rem;
+    height: 33rem;
     border-radius: 40px;
     overflow-x: auto;
     overflow-y: auto;
@@ -181,6 +181,16 @@ p{
     height: 20%;
     overflow: auto;
 }
+#t5{
+    background-color: rgba(243, 243, 243, 0.622);
+    width: 80%;
+    height: 17.2rem;
+    border-radius: 40px;
+    overflow-x: auto;
+    overflow-y: auto;
+    padding: 20px;
+}
+
 @keyframes a{
     from {
         opacity: 0;
