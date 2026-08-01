@@ -1,7 +1,7 @@
 /* 五子棋组件命名空间 gobang- 防止和你网站样式冲突 */
 .gobang-wrap{
     width:100%;
-    height:100%;
+    height:80%;
     overflow: auto;
     background:#DEB887;
     scrollbar-width: thin;
@@ -18,6 +18,7 @@
 /* 内部滚动大画布 放大1.5倍，可以拖拽滚动 */
 .gobang-canvas{
     position:relative;
+    transform: scale(0.9);
     width:150%;
     height:150%;
     padding:4%;
