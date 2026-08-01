@@ -60,7 +60,7 @@
     <div id="text">
         <div class="glass" id="t5">
             <h1>网站日志</h1>
-            <p>新增小游戏《五子棋》(在下面))</p>
+            <p>新增小游戏《五子棋》(在下面)</p>
             <p>新增热点项目</p>
             <p>修复邵恒墓碑日期算错问题</p>
             <p>修复小井井个人博客无法跳转</p>
@@ -89,7 +89,7 @@
         <div class="glass" id="t4">
                     <!-- ========五子棋组件 开始 直接复制嵌入你的页面======= -->
             <div id="t4-1">
-                <h1>五子棋(测试版)</h1>
+                <h1>五子棋(困难版)</h1>
             </div>
             <div class="gobang-wrap" >
 
@@ -185,53 +185,289 @@
                     }
                     return false;
                 }
-
+            
                 //简易AI
-                function aiPlay(){
-                    if(gameOver) return;
-                    let best=null;
-                    let maxScore=-9999;
-                    for(let y=0;y<size;y++){
-                        for(let x=0;x<size;x++){
-                            if(map[y][x]) continue;
-                            let score = getScore(x,y,2)*1.1 + getScore(x,y,1);
-                            if(score>maxScore){
-                                maxScore=score;
-                                best={x,y};
-                            }
-                        }
-                    }
-                    placeChess(best.x,best.y,2);
-                    if(checkWin(best.x,best.y,2)){
-                        tipDom.innerText = "😥AI获胜！";
-                        gameOver=true;
-                    }else{
-                        tipDom.innerText = "轮到黑棋落子";
-                    }
-                }
+                /**
+ * AI落子主函数【增强攻防版】
+ * 思路：遍历所有空点位，给每个位置打分，选择分数最高的点位落子
+ * 优先级：成五 > 堵五 > 冲四 > 堵冲四 > 活三 > 堵活三 > 眠三 > 防守 > 普通拓展
+ */
+function aiPlay() {
+    if(gameOver) return;
 
-                function getScore(px,py,player){
-                    map[py][px]=player;
-                    let maxLine=0;
-                    const dirs=[[1,0],[0,1],[1,1],[1,-1]];
-                    for(let [dx,dy] of dirs){
-                        let count=1;
-                        for(let s=1;s<5;s++){
-                            let nx=px+dx*s, ny=py+dy*s;
-                            if(nx>=0&&nx<size&&ny>=0&&ny<size&&map[ny][nx]===player) count++;
-                            else break;
-                        }
-                        for(let s=1;s<5;s++){
-                            let nx=px-dx*s, ny=py-dy*s;
-                            if(nx>=0&&nx<size&&ny>=0&&ny<size&&map[ny][nx]===player) count++;
-                            else break;
-                        }
-                        maxLine=Math.max(maxLine,count);
-                    }
-                    map[py][px]=0;
-                    return maxLine;
-                }
-            })();
+    let bestScore = -Infinity;
+    let bestX = 7;
+    let bestY = 7;
+
+    // 遍历棋盘所有空位
+    for(let y = 0; y < size; y++){
+        for(let x = 0; x < size; x++){
+            if(map[y][x] !== 0) continue;
+
+            // 两种分数：AI下这里能获得多少分、玩家下这里会获得多少分（防守权重）
+            map[y][x] = 2;
+            let attackScore = getPointScore(x, y, 2);
+            map[y][x] = 1;
+            let defendScore = getPointScore(x, y, 1);
+            map[y][x] = 0;
+
+            // 权重：进攻优先，同时兼顾防守
+            const total = attackScore * 1.15 + defendScore;
+
+            // 更新最优点位
+            if(total > bestScore){
+                bestScore = total;
+                bestX = x;
+                bestY = y;
+            }
+        }
+    }
+
+    // 在最优位置落子
+    placeChess(bestX, bestY, 2);
+    if(checkWin(bestX, bestY, 2)){
+        tipDom.innerText = "😥AI取得胜利！";
+        gameOver = true;
+    }else{
+        tipDom.innerText = "轮到你落子";
+    }
+}
+
+/**
+ * 给指定坐标、指定棋子计算分值
+ * @param {number} x 横坐标
+ * @param {number} y 纵坐标
+ * @param {number} chessType 1玩家黑棋 2AI白棋
+ * @returns {number} 综合分数
+ */
+function getPointScore(x, y, chessType){
+    const dirs = [[1,0],[0,1],[1,1],[1,-1]]; // 横、竖、正斜、反斜4个方向
+    let totalScore = 0;
+
+    for(const [dx, dy] of dirs){
+        // 获取当前方向连贯棋子信息：连续数量、两端是否可延伸（活棋/眠棋）
+        const info = getLineInfo(x, y, dx, dy, chessType);
+        const cnt = info.count;
+        const leftOpen = info.left;
+        const rightOpen = info.right;
+
+        // 分级打分策略【五子棋标准权重】
+        if(cnt === 5) totalScore += 100000;    // 直接五连，必胜（最高优先级）
+        if(cnt === 4){
+            if(leftOpen && rightOpen) totalScore += 20000; // 活四
+            else totalScore += 8000;                       // 冲四
+        }
+        if(cnt === 3){
+            if(leftOpen && rightOpen) totalScore += 3000;  // 活三
+            else totalScore += 600;                        // 眠三
+        }
+        if(cnt === 2){
+            if(leftOpen && rightOpen) totalScore += 400;
+            else totalScore += 100;
+        }
+        if(cnt === 1) totalScore += 15;
+    }
+    return totalScore;
+}
+
+/**
+ * 沿着单一方向，统计连续棋子数量、两边空位情况
+ * @param {number} x 落点
+ * @param {number} y 落点
+ * @param {number} dx x方向增量
+ * @param {number} dy y方向增量
+ * @param {number} self 棋子类型
+ * @returns {Object} {count:连续子数量, left:左侧是否有空, right:右侧是否有空}
+ */
+function getLineInfo(x, y, dx, dy, self){
+    let count = 1;
+    let leftOpen = false;
+    let rightOpen = false;
+
+    // 正向延伸
+    let nx = x + dx, ny = y + dy;
+    while(nx >= 0 && nx < size && ny >=0 && ny < size && map[ny][nx] === self){
+        count++;
+        nx += dx;
+        ny += dy;
+    }
+    // 正向尽头是否是空位
+    if(nx >=0 && nx < size && ny >=0 && ny < size && map[ny][nx] === 0) rightOpen = true;
+
+    // 反向延伸
+    nx = x - dx;
+    ny = y - dy;
+    while(nx >= 0 && nx < size && ny >=0 && ny < size && map[ny][nx] === self){
+        count++;
+        nx -= dx;
+        ny -= dy;
+    }
+    if(nx >=0 && nx < size && ny >=0 && ny < size && map[ny][nx] === 0) leftOpen = true;
+
+    return {count, leftOpen, rightOpen};
+}
+// ====================== 【增强AI核心模块 带完整注释】======================
+/**
+ * AI自动落子主入口
+ * 逻辑：遍历所有空位打分，选择全局最高分点位
+ * 权重策略：进攻优先，同时强力防守对手杀招
+ */
+function aiPlay() {
+    if (gameOver) return;
+
+    let bestScore = -Infinity;
+    let bestX = 7;
+    let bestY = 7;
+
+    // 遍历棋盘所有空位
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            if (map[y][x] !== 0) continue;
+
+            // 模拟AI落子，计算进攻分
+            map[y][x] = 2;
+            const attackScore = getPointScore(x, y, 2);
+
+            // 模拟玩家落子，计算防守分
+            map[y][x] = 1;
+            const defendScore = getPointScore(x, y, 1);
+
+            // 清空模拟
+            map[y][x] = 0;
+
+            // 进攻权重系数1.15，数值越大AI越激进；调低偏向保守防守
+            const totalScore = attackScore * 1.15 + defendScore;
+
+            // 更新最优坐标
+            if (totalScore > bestScore) {
+                bestScore = totalScore;
+                bestX = x;
+                bestY = y;
+            }
+        }
+    }
+
+    // AI在最优位置落子
+    placeChess(bestX, bestY, 2);
+
+    // 判断AI获胜
+    if (checkWin(bestX, bestY, 2)) {
+        tipDom.innerText = "😥AI取得胜利！";
+        gameOver = true;
+    } else {
+        currentPlayer = 1;
+        tipDom.innerText = "轮到你落子";
+    }
+}
+
+/**
+ * 给单个坐标进行局势打分
+ * @param {number} x 坐标
+ * @param {number} y 坐标
+ * @param {number} chessType 1玩家 / 2AI
+ * @returns {number} 分数
+ */
+function getPointScore(x, y, chessType) {
+    // 四个检索方向
+    const dirs = [[1, 0], [0, 1], [1, 1], [1, -1]];
+    let total = 0;
+
+    for (const [dx, dy] of dirs) {
+        const info = getLineInfo(x, y, dx, dy, chessType);
+        const linkCount = info.count;
+        const leftOpen = info.left;
+        const rightOpen = info.right;
+
+        // 五子棋标准分值梯度
+        if (linkCount >= 5) total += 100000;    // 五连，直接必胜
+        else if (linkCount === 4) {
+            if (leftOpen && rightOpen) total += 20000; // 活四
+            else total += 8000;                        // 冲四
+        } else if (linkCount === 3) {
+            if (leftOpen && rightOpen) total += 3000;  // 活三
+            else total += 600;                         // 眠三
+        } else if (linkCount === 2) {
+            if (leftOpen && rightOpen) total += 400;   // 活二
+            else total += 100;                         // 眠二
+        } else if (linkCount === 1) {
+            total += 15;
+        }
+    }
+    return total;
+}
+
+/**
+ * 沿着单一方向统计：连续棋子数量、两端是否有空位
+ * @param {number} x
+ * @param {number} y
+ * @param {number} dx 方向增量x
+ * @param {number} dy 方向增量y
+ * @param {number} self 棋子类型
+ * @returns {{count:number, left:boolean, right:boolean}}
+ */
+function getLineInfo(x, y, dx, dy, self) {
+    let count = 1;
+    let leftOpen = false;
+    let rightOpen = false;
+
+    // 正方向延伸查找同色
+    let nx = x + dx;
+    let ny = y + dy;
+    while (nx >= 0 && nx < size && ny >= 0 && ny < size && map[ny][nx] === self) {
+        count++;
+        nx += dx;
+        ny += dy;
+    }
+    // 正向外侧是否空位
+    if (nx >= 0 && nx < size && ny >= 0 && ny < size && map[ny][nx] === 0) {
+        rightOpen = true;
+    }
+
+    // 反方向延伸查找同色
+    nx = x - dx;
+    ny = y - dy;
+    while (nx >= 0 && nx < size && ny >= 0 && ny < size && map[ny][nx] === self) {
+        count++;
+        nx -= dx;
+        ny -= dy;
+    }
+    // 反向外侧是否空位
+    if (nx >= 0 && nx < size && ny >= 0 && ny < size && map[ny][nx] === 0) {
+        leftOpen = true;
+    }
+
+    return { count, left: leftOpen, right: rightOpen };
+}
+
+/**
+ * 重置按钮绑定
+ */
+resetBtn.addEventListener("click", initBoard);
+
+// 页面加载完成，初始化游戏
+window.onload = initBoard;
+/**
+
+//  * 清空整个棋盘、重置游戏状态
+//  */
+// function clearBoard() {
+//     // 重置棋盘数组数据
+//     for(let y = 0; y < size; y++){
+//         for(let x = 0; x < size; x++){
+//             map[y][x] = 0;
+//         }
+//     }
+//     gameOver = false;
+//     currentPlayer = 1;
+//     tipDom.innerText = "游戏重新开始，请落子";
+
+//     // 删除页面上所有棋子DOM元素
+//     document.querySelectorAll(".cell > div").forEach(chessDom => {
+//         chessDom.remove();
+//     });
+// }
+
+})();
             </script>
             <!-- ========五子棋组件 结束======= -->
     </div>
