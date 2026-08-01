@@ -229,7 +229,7 @@ function aiPlay() {
         tipDom.innerText = "人机胜利";
         gameOver = true;
     }else{
-        tipDom.innerText = "轮到你落子";
+        tipDom.innerText = "请下出神之一手";
     }
 }
 
@@ -352,11 +352,11 @@ function aiPlay() {
 
     // 判断AI获胜
     if (checkWin(bestX, bestY, 2)) {
-        tipDom.innerText = "😥AI取得胜利！";
+        tipDom.innerText = "人机胜利";
         gameOver = true;
     } else {
         currentPlayer = 1;
-        tipDom.innerText = "轮到你落子";
+        tipDom.innerText = "请下出神之一手";
     }
 }
 
