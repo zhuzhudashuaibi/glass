@@ -336,7 +336,7 @@ function aiPlay() {
             map[y][x] = 0;
 
             // 进攻权重系数1.15，数值越大AI越激进；调低偏向保守防守
-            const totalScore = attackScore * 1.15 + defendScore;
+            const totalScore = attackScore * 1.3 + defendScore;
 
             // 更新最优坐标
             if (totalScore > bestScore) {
