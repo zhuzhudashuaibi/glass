@@ -190,6 +190,15 @@ p{
     overflow-y: auto;
     padding: 20px;
 }
+#t6{
+    background-color: rgba(243, 243, 243, 0.622);
+    width: 80%;
+    height: 15rem;
+    border-radius: 40px;
+    overflow-x: auto;
+    overflow-y: auto;
+    padding: 20px;
+}
 
 @keyframes a{
     from {
