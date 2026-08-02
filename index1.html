@@ -192,120 +192,7 @@
  * 思路：遍历所有空点位，给每个位置打分，选择分数最高的点位落子
  * 优先级：成五 > 堵五 > 冲四 > 堵冲四 > 活三 > 堵活三 > 眠三 > 防守 > 普通拓展
  */
-function aiPlay() {
-    if(gameOver) return;
 
-    let bestScore = -Infinity;
-    let bestX = 7;
-    let bestY = 7;
-
-    // 遍历棋盘所有空位
-    for(let y = 0; y < size; y++){
-        for(let x = 0; x < size; x++){
-            if(map[y][x] !== 0) continue;
-
-            // 两种分数：AI下这里能获得多少分、玩家下这里会获得多少分（防守权重）
-            map[y][x] = 2;
-            let attackScore = getPointScore(x, y, 2);
-            map[y][x] = 1;
-            let defendScore = getPointScore(x, y, 1);
-            map[y][x] = 0;
-
-            // 权重：进攻优先，同时兼顾防守
-            const total = attackScore * 1.15 + defendScore;
-
-            // 更新最优点位
-            if(total > bestScore){
-                bestScore = total;
-                bestX = x;
-                bestY = y;
-            }
-        }
-    }
-
-    // 在最优位置落子
-    placeChess(bestX, bestY, 2);
-    if(checkWin(bestX, bestY, 2)){
-        tipDom.innerText = "人机胜利";
-        gameOver = true;
-    }else{
-        tipDom.innerText = "请下出神之一手";
-    }
-}
-
-/**
- * 给指定坐标、指定棋子计算分值
- * @param {number} x 横坐标
- * @param {number} y 纵坐标
- * @param {number} chessType 1玩家黑棋 2AI白棋
- * @returns {number} 综合分数
- */
-function getPointScore(x, y, chessType){
-    const dirs = [[1,0],[0,1],[1,1],[1,-1]]; // 横、竖、正斜、反斜4个方向
-    let totalScore = 0;
-
-    for(const [dx, dy] of dirs){
-        // 获取当前方向连贯棋子信息：连续数量、两端是否可延伸（活棋/眠棋）
-        const info = getLineInfo(x, y, dx, dy, chessType);
-        const cnt = info.count;
-        const leftOpen = info.left;
-        const rightOpen = info.right;
-
-        // 分级打分策略【五子棋标准权重】
-        if(cnt === 5) totalScore += 100000;    // 直接五连，必胜（最高优先级）
-        if(cnt === 4){
-            if(leftOpen && rightOpen) totalScore += 20000; // 活四
-            else totalScore += 8000;                       // 冲四
-        }
-        if(cnt === 3){
-            if(leftOpen && rightOpen) totalScore += 3000;  // 活三
-            else totalScore += 600;                        // 眠三
-        }
-        if(cnt === 2){
-            if(leftOpen && rightOpen) totalScore += 400;
-            else totalScore += 100;
-        }
-        if(cnt === 1) totalScore += 15;
-    }
-    return totalScore;
-}
-
-/**
- * 沿着单一方向，统计连续棋子数量、两边空位情况
- * @param {number} x 落点
- * @param {number} y 落点
- * @param {number} dx x方向增量
- * @param {number} dy y方向增量
- * @param {number} self 棋子类型
- * @returns {Object} {count:连续子数量, left:左侧是否有空, right:右侧是否有空}
- */
-function getLineInfo(x, y, dx, dy, self){
-    let count = 1;
-    let leftOpen = false;
-    let rightOpen = false;
-
-    // 正向延伸
-    let nx = x + dx, ny = y + dy;
-    while(nx >= 0 && nx < size && ny >=0 && ny < size && map[ny][nx] === self){
-        count++;
-        nx += dx;
-        ny += dy;
-    }
-    // 正向尽头是否是空位
-    if(nx >=0 && nx < size && ny >=0 && ny < size && map[ny][nx] === 0) rightOpen = true;
-
-    // 反向延伸
-    nx = x - dx;
-    ny = y - dy;
-    while(nx >= 0 && nx < size && ny >=0 && ny < size && map[ny][nx] === self){
-        count++;
-        nx -= dx;
-        ny -= dy;
-    }
-    if(nx >=0 && nx < size && ny >=0 && ny < size && map[ny][nx] === 0) leftOpen = true;
-
-    return {count, leftOpen, rightOpen};
-}
 // ====================== 【增强AI核心模块 带完整注释】======================
 /**
  * AI自动落子主入口
@@ -479,6 +366,7 @@ window.onload = initBoard;
             <p>zhuzhu2012 天南 刘子毅 王俊昌</p>
             <p>诸赢7891 程鑫 lv100</p>
             <p>AAA火烧汉堡青年养老院张总</p>
+            <p>shunliz 东方宸曦</p>
             <h3>获胜者可携带困难版胜利截图联系我上榜</h3>
         </div>
     </div>
