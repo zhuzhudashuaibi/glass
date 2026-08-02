@@ -1,0 +1,117 @@
+
+#topBar{
+    background:#fff;
+    border-radius:14px;
+    padding:12px 16px;
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:14px;
+    box-shadow:0 2px 6px #00000010;
+}
+.info-text{
+    font-size:14px;
+    color:#444;
+}
+#board{
+    display:grid;
+    gap:3px;
+    width:100%;
+}
+.cell{
+    aspect-ratio:1/1;
+    border-radius:6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:min(3.5vw,26px); /* 10列缩小字体 */
+    cursor:pointer;
+    transition:0.1s;
+    min-width:0;
+}
+.cell:active{
+    transform:scale(0.95);
+}
+#btn-row{
+    display:flex;
+    gap:6px;
+    margin-top:10px;
+    flex-wrap:wrap;
+    padding: 0.1rem;
+    border-radius: 25px;
+    
+}
+#t7 button{
+    -webkit-tap-highlight-color: transparent;
+    flex:1;
+    padding:10px;
+    border:none;
+    border-radius:25px;
+    font-size:14px;
+    background:#e4e4e4;
+    cursor:pointer;
+    min-width:65px;
+
+
+    --lggc-bg: rgba(255, 255, 255, 0.08);
+    --lggc-border: rgba(51, 51, 51, 0.08);
+    --lggc-blur: 8px;
+    --lggc-highlight: rgba(255, 255, 255, 0.85);
+    border: 1px do var(--lggc-border);
+    background: var(--lggc-bg);
+    color: rgba(17, 24, 39, 0.92);
+    backdrop-filter: blur(calc(var(--lggc-blur) * 0.35)) saturate(160%);
+    -webkit-backdrop-filter: blur(calc(var(--lggc-blur) * 0.35)) saturate(160%);
+    box-shadow:
+    inset 1.5px -1.5px 1px -1px rgba(255, 255, 255, 0.92),
+    inset -1.5px 1.5px 1px -1px rgba(255, 255, 255, 0.9),
+    inset 0 0 3px rgba(15, 23, 42, 0.35),
+    0 16px 32px rgba(15, 23, 42, 0.14);
+}
+
+#btnM6.active,#btnT4.active{
+    background:#ff7c7c;
+    color:#ffffff;
+}
+#btnM8.active,#btnT3.active{
+    background:#fbff8f;
+    color:#ffffff;
+}
+#btnM10.active,#btnT2.active{
+    background:#7cff87;
+    color:#ffffff;
+}
+
+
+/* 胜负提示DIV */
+#resultBox{
+    display:none;
+    position:absolute;
+    left:0;
+    right:0;
+    top:35%;
+    margin:0 auto;
+    width:80%;
+    border-radius:16px;
+    text-align:center;
+    font-size:22px;
+    font-weight:bold;
+    color:white;
+    z-index:99;
+}
+.win{
+    background:#36c089;
+}
+.lose{
+    background:#e85b5b;
+}
+
+.c1{background:#61d2c0;}
+.c2{background:#79bcf0;}
+.c3{background:#aa89e0;}
+.c4{background:#f6a1c0;}
+.c5{background:#f8d068;}
+.c6{background:#f08870;}
+.c7{background:#a3e379;}
+.c8{background:#b8a9f7;}
+.c9{background:#f4b9c8;}
+.c10{background:#ffd6a5;}
