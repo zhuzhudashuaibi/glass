@@ -216,6 +216,24 @@ p{
     overflow-y: auto;
     padding: 20px;
 }
+#t9{
+    width: 80%;
+    height: 30rem;
+    border-radius: 40px;
+    overflow-x: auto;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+#t9 ion-icon{
+    font-size: 10rem; 
+    transform: scale(1,1.6);
+    text-align: center;
+    margin-top: 2rem;
+    color: #898989;
+}
 
 @keyframes a{
     from {
