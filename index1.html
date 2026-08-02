@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="glassMy.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="wuziqi.css">
+    <link rel="stylesheet" href="xiaoniu.css">
     <!-- <script type="module" src="ionicons.designerpack"> </script> -->
     <script type="module" src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.js"></script>
@@ -41,7 +42,7 @@
 
         <div id="text" >
         <div class="glass" id="t1">
-                <h1>8月热点</h1>
+                <h2>8月热点</h2>
                 <p>夏日炎炎 各地迎来高温</p>
                 <p>祝大家清凉一夏 万事顺遂</p>
                 <p>CORTIS新歌《MOTION》于7.31上线</p>
@@ -59,15 +60,10 @@
 
     <div id="text">
         <div class="glass" id="t5">
-            <h1>网站日志</h1>
+            <h2>网站日志</h2>
             <p>新增小游戏《五子棋》(在下面)</p>
-            <p>新增热点项目</p>
-            <p>修复邵恒墓碑日期算错问题</p>
-            <p>修复小井井个人博客无法跳转</p>
-            <p>修复了小部分苹果设备的比例问题</p>
-            <p>修复封神榜名字打错问题</p>
-            <p>删除灵动岛教程</p>
-            <p>截至8.1日</p>
+            <p>新增小游戏《小牛解谜》(在下面)</p>
+            <p>截至8月2号</p>
         </div>
 
     </div>
@@ -75,7 +71,7 @@
 
     <div id="text" >
         <div class="glass" id="t2">
-            <h1>问题说明</h1>
+            <h2>问题说明</h2>
                 <p>目前只适配移动端(手机) 部分平板可能出现比例问题</p>
                 <p>部分苹果手机不建议用Safari打开</p>
                 <p>图标为函数绘制 加载稍慢</p>
@@ -89,7 +85,7 @@
         <div class="glass" id="t4">
                     <!-- ========五子棋组件 开始 直接复制嵌入你的页面======= -->
             <div id="t4-1">
-                <h1>五子棋(困难版)</h1>
+                <h2>五子棋(困难版)</h2>
             </div>
             <div class="gobang-wrap" >
 
@@ -362,12 +358,305 @@ window.onload = initBoard;
 
     <div id="text">
         <div class="glass" id="t6">
-            <h1 style="text-align: center;">五子棋获胜者名单</h1>
+            <h2 style="text-align: center;">五子棋获胜者名单</h2>
             <p>zhuzhu2012 天南 刘子毅 王俊昌</p>
             <p>诸赢7891 程鑫 lv100</p>
             <p>AAA火烧汉堡青年养老院张总</p>
             <p>shunliz 东方宸曦</p>
             <h3>获胜者可携带困难版胜利截图联系我上榜</h3>
+        </div>
+    </div>
+
+    <div id="text">
+        <div id="t7" class="glass">
+            <h2 style="text-align: center;">小牛解谜</h2>
+            <div id="topBar">
+                <div class="info-text">
+                剩余机会：<span id="chanceNum">3</span>
+                </div>
+                <div class="info-text">
+                    剩余小牛：<span id="remainNum">5</span>
+                </div>
+            </div>
+
+            <div id="btn-row">
+                <button onclick="setMode(6)" id="btnM6" class="active">6色</button>
+                <button onclick="setMode(8)" id="btnM8">8色</button>
+                <button onclick="setMode(10)" id="btnM10">10色</button>
+            </div>
+
+            <div id="btn-row">
+                <button onclick="setTolerance(4)" id="btnT4">简单</button>
+                <button onclick="setTolerance(3)" id="btnT3" class="active">普通</button>
+                <button onclick="setTolerance(2)" id="btnT2">困难</button>
+            </div>
+
+            <div id="board" style="margin-top: 10px;"></div>
+            <!-- 胜负提示DIV -->
+            <div id="resultBox"></div>
+
+            <div class="btn-row" style="margin-top: 10px;">
+                <button onclick="createRandomMap()" id="btnNewMap">生成新地图</button>
+                <button onclick="initGame()" id="btnReset">重置本局</button>
+            </div>
+        </div>
+        <script>
+            const allColors = [
+                "c1","c2","c3","c4","c5","c6",
+                "c7","c8","c9","c10"
+            ];
+
+            let map = [];
+            let data = [];
+            let startPos = {r:0,c:0};
+
+            // 当前模式：6 / 8 / 10
+            let modeN = 6;
+            let maxChance = 3;
+            let chance = 3;
+            let gameOver = false;
+
+            // 获取DOM（全部ID获取）
+            const resultBox = document.getElementById("resultBox");
+            const chanceNum = document.getElementById("chanceNum");
+            const remainNum = document.getElementById("remainNum");
+            const boardDom = document.getElementById("board");
+
+            // 隐藏提示
+            function hideTip(){
+                resultBox.style.display = "none";
+            }
+            // 展示提示
+            function showTip(text, isWin){
+                resultBox.innerText = text;
+                resultBox.className = "";
+                resultBox.classList.add(isWin ? "win" : "lose");
+                resultBox.style.display = "block";
+            }
+
+            // 切换棋盘模式 N色 = N行N列
+            function setMode(n){
+                modeN = n;
+                // 清除激活
+                document.getElementById("btnM6").classList.remove('active');
+                document.getElementById("btnM8").classList.remove('active');
+                document.getElementById("btnM10").classList.remove('active');
+                if(n === 6) document.getElementById("btnM6").classList.add("active");
+                if(n === 8) document.getElementById("btnM8").classList.add("active");
+                if(n === 10) document.getElementById("btnM10").classList.add("active");
+            }
+
+            // 设置容错次数
+            function setTolerance(count){
+                maxChance = count;
+                document.getElementById("btnT4").classList.remove('active');
+                document.getElementById("btnT3").classList.remove('active');
+                document.getElementById("btnT2").classList.remove('active');
+                if(count === 4) document.getElementById("btnT4").classList.add("active");
+                if(count === 3) document.getElementById("btnT3").classList.add("active");
+                if(count === 2) document.getElementById("btnT2").classList.add("active");
+                initGame();
+            }
+
+            // 获取四邻坐标
+            function around(r,c){
+                const dir = [[-1,0],[1,0],[0,-1],[0,1]];
+                let list = [];
+                for(let [dr,dc] of dir){
+                    const nr=r+dr, nc=c+dc;
+                    if(nr>=0&&nr<modeN&&nc>=0&&nc<modeN) list.push([nr,nc]);
+                }
+                return list;
+            }
+
+            // 生成随机关卡地图
+            function createRandomMap(){
+                const useColors = allColors.slice(0, modeN);
+                // N * N 空白地图
+                map = Array(modeN).fill().map(()=>Array(modeN).fill(null));
+
+                // 每个颜色创建种子起点
+                for(let i=0;i<modeN;i++){
+                    let r,c;
+                    let ok = false;
+                    for(let t=0;t<100;t++){
+                        r = Math.floor(Math.random()*modeN);
+                        c = Math.floor(Math.random()*modeN);
+                        if(!map[r][c]){
+                            ok = true;
+                            break;
+                        }
+                    }
+                    if(ok) map[r][c] = useColors[i];
+                }
+
+                // 收集空白格子
+                let empty = [];
+                for(let r=0;r<modeN;r++){
+                    for(let c=0;c<modeN;c++){
+                        if(!map[r][c]) empty.push({r,c});
+                    }
+                }
+                empty.sort(()=>Math.random()-0.5);
+
+                // 扩散填充色块
+                for(let cell of empty){
+                    const {r,c} = cell;
+                    const near = around(r,c);
+                    const neighbors = near.filter(([nr,nc])=>map[nr][nc]);
+                    if(neighbors.length>0){
+                        const [nr,nc] = neighbors[Math.floor(Math.random()*neighbors.length)];
+                        map[r][c] = map[nr][nc];
+                    }else{
+                        map[r][c] = useColors[Math.floor(Math.random()*useColors.length)];
+                    }
+                }
+
+                // 寻找第一个颜色，随机放置初始固定小牛
+                const firstColor = useColors[0];
+                let candidates = [];
+                for(let r=0;r<modeN;r++){
+                    for(let c=0;c<modeN;c++){
+                        if(map[r][c] === firstColor){
+                            candidates.push({r,c});
+                        }
+                    }
+                }
+                const start = candidates[Math.floor(Math.random()*candidates.length)];
+                startPos.r = start.r;
+                startPos.c = start.c;
+
+                initGame();
+            }
+
+            // 初始化游戏数据
+            function initGame(){
+                hideTip();
+                chance = maxChance;
+                gameOver = false;
+                data = [];
+                for(let r=0;r<modeN;r++){
+                    let row = [];
+                    for(let c=0;c<modeN;c++){
+                        row.push({
+                            color:map[r][c],
+                            cow:false,
+                            cross:false
+                        });
+                    }
+                    data.push(row);
+                }
+                // 放置不可删除初始小牛
+                data[startPos.r][startPos.c].cow = true;
+                render();
+            }
+
+            // 渲染棋盘
+            function render(){
+                boardDom.innerHTML = "";
+                boardDom.style.gridTemplateColumns = `repeat(${modeN},1fr)`;
+
+                let cowCount = 0;
+                for(let r=0;r<modeN;r++){
+                    for(let c=0;c<modeN;c++){
+                        const div = document.createElement("div");
+                        div.className = `cell ${data[r][c].color}`;
+
+                        if(data[r][c].cow){
+                            div.textContent = "🐮";
+                            cowCount++;
+                        }else if(data[r][c].cross){
+                            div.textContent = "❌";
+                        }
+
+                        if(!gameOver){
+                            div.onclick = ()=>click(r,c);
+                        }
+                        boardDom.appendChild(div);
+                    }
+                }
+
+                chanceNum.innerText = chance;
+                remainNum.innerText = modeN - cowCount;
+
+                // 胜利条件：小牛总数 = 颜色总数modeN
+                if(cowCount === modeN && !gameOver){
+                    gameOver = true;
+                    showTip("🎉恭喜通关！", true);
+                }
+            }
+
+            // 判断坐标是否可以放牛
+            function canPlace(r,c){
+                const color = data[r][c].color;
+                // 同色不能存在其他牛
+                for(let i=0;i<modeN;i++){
+                    for(let j=0;j<modeN;j++){
+                        if(data[i][j].color === color && data[i][j].cow) return false;
+                    }
+                }
+                // 同行
+                for(let j=0;j<modeN;j++){
+                    if(data[r][j].cow) return false;
+                }
+                // 同列
+                for(let i=0;i<modeN;i++){
+                    if(data[i][c].cow) return false;
+                }
+                // 四邻禁止有牛
+                const near = around(r,c);
+                for(let [nr,nc] of near){
+                    if(data[nr][nc].cow) return false;
+                }
+                return true;
+            }
+
+            // 格子点击事件
+            function click(r,c){
+                if(gameOver) return;
+                // 初始小牛禁止操作
+                if(r === startPos.r && c === startPos.c) return;
+
+                // 点击小牛，移除
+                if(data[r][c].cow){
+                    data[r][c].cow = false;
+                    render();
+                    return;
+                }
+                // 错误标记格子禁止点击
+                if(data[r][c].cross) return;
+
+                if(canPlace(r,c)){
+                    data[r][c].cow = true;
+                    render();
+                }else{
+                    data[r][c].cross = true;
+                    chance--;
+                    if(chance <= 0){
+                        gameOver = true;
+                        render();
+                        showTip("💔机会用尽，游戏失败！", false);
+                        return;
+                    }
+                    render();
+                }
+            }
+
+            // 默认加载 6色6×6
+            createRandomMap();
+            </script>
+    </div>
+
+    <div id="text">
+        <div id="t8" class="glass">
+            <h2>小牛解谜规则</h2>
+            <p>每横,排竖排只能放置一头牛</p>
+            <p>每种颜色内只能放置一头牛</p>
+            <p>每头牛的上下左右4个格子内不能放置其他小牛</p>
+            <p>开局棋盘自动生成一头小牛无法移动,删除</p>
+            <p>在棋盘内放完所有牛就算做胜利</p>
+            <p>错误次数超过上限则判为失败</p>
+            <h3>特别鸣谢:shunliz</h3>
         </div>
     </div>
 
@@ -383,10 +672,10 @@ window.onload = initBoard;
 
 
 
-    <h1 style="text-align: center;">彩蛋！</h1>
+    <h2 style="text-align: center;">彩蛋！</h2>
     <div id="text" >
         <div class="glass" id="t2">
-                <h1>To shunliz</h1>
+                <h2>To shunliz</h2>
                 <p></p>
                 <p>我们相识在2024.9</p>
                 <p id="turtletime">    
