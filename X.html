@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>艾克斯融合仪</title>
+  <title>X</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
@@ -184,7 +184,7 @@
       // --- 7. 到达后：艾克斯闪烁 ---
       setTimeout(() => {
         exImg.classList.add('flash');
-      }, 700);
+      }, 7000);
 
       // --- 8. 闪烁结束后：卡片滑回原位 ---
       setTimeout(() => {
@@ -195,14 +195,14 @@
         flyer.style.top    = originTop + 'px';
         flyer.style.width  = originWidth + 'px';
         flyer.style.height = originHeight + 'px';
-      }, 1500);
+      }, 7000);
 
       // --- 9. 滑回完成：移除飞行卡片，恢复原卡片 ---
       setTimeout(() => {
         flyer.remove();
         card.classList.remove('hidden');
         busy = false;
-      }, 2200); // 700ms(去) + 700ms(回)
+      }, 7700); // 700ms(去) + 700ms(回)
     });
   </script>
 </body>
