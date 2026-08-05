@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>艾克斯融合仪</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%;
+      background: #000;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+
+    /* ===== 启动遮罩 ===== */
+    #start-hint {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.95); color: #00e5ff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5em; z-index: 999;
+      cursor: pointer;
+      transition: opacity 0.8s ease-out;
+    }
+    #start-hint.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ===== 主布局 ===== */
+    .main-wrap {
+      display: flex;
+      flex-direction: column;
+      width: 100%; height: 100%;
+    }
+
+    /* 艾克斯区域 80% */
+    .ex-area {
+      flex: 0 0 80%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .ex-img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      transition: filter 0.15s;
+    }
+    .ex-img.flash {
+      animation: exFlash 1s infinite;
+    }
+    @keyframes exFlash {
+      0%   {opacity: 0.3;}
+      50% {opacity: 1;}
+      100% {opacity: 0.3;}
+    }
+
+    /* 卡片区域 20% */
+    .card-area {
+      flex: 0 0 20%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .card {
+      width: 60%;
+      max-width: 220px;
+      height: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .card:active { transform: scale(0.95); }
+    .card.hidden { visibility: hidden; }
+
+    /* ===== 飞行卡片 ===== */
+    .flyer {
+      position: fixed;
+      z-index: 100;
+      border-radius: 10px;
+      box-shadow: 0 0 25px rgba(0, 229, 255, 0.7);
+      /* 过渡动画：位置+尺寸变化 0.7s */
+      transition: top 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+                  left 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+                  width 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+                  height 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="start-hint">点击启动</div>
+
+  <div class="main-wrap">
+    <div class="ex-area">
+      <img src="X/x.jpg" class="ex-img" id="exImg" alt="艾克斯">
+    </div>
+    <div class="card-area">
+      <img src="X/card-comora.jpg" class="card" id="card" alt="卡片">
+    </div>
+  </div>
+
+  <script>
+    const startHint = document.getElementById('start-hint');
+    const exImg     = document.getElementById('exImg');
+    const card      = document.getElementById('card');
+
+    const openAudio   = new Audio('X/open.mp3');
+    const insertAudio = new Audio('X/sound-comora.mp3');
+    openAudio.preload = 'auto';
+    insertAudio.preload = 'auto';
+
+    // 记录卡片原图比例（加载完就知道了）
+    let cardRatio = 16 / 9; // 默认值，下面会覆盖
+    card.addEventListener('load', () => {
+      cardRatio = card.naturalWidth / card.naturalHeight;
+    });
+    // 如果图片已缓存，直接读
+    if (card.complete) {
+      cardRatio = card.naturalWidth / card.naturalHeight;
+    }
+
+    let busy = false;
+
+    // ===== 启动 =====
+    startHint.addEventListener('click', () => {
+      startHint.classList.add('hide');
+      openAudio.play().catch(() => {});
+      setTimeout(() => { startHint.style.display = 'none'; }, 800);
+    });
+
+    // ===== 卡片插入动画 =====
+    card.addEventListener('click', () => {
+      if (busy) return;
+      busy = true;
+
+      // --- 1. 获取卡片当前位置和尺寸 ---
+      const rect = card.getBoundingClientRect();
+      const originLeft   = rect.left;
+      const originTop    = rect.top;
+      const originWidth  = rect.width;
+      const originHeight = rect.height;
+
+      // --- 2. 计算放大后的尺寸：宽度 = 屏幕宽，高度按比例 ---
+      const screenW = window.innerWidth;
+      const flyerW  = screenW;
+      const flyerH  = screenW / cardRatio;
+
+      // --- 3. 计算目标位置：艾克斯区域正中心 ---
+      const exRect  = exImg.getBoundingClientRect();
+      const targetLeft = exRect.left + exRect.width  / 2 - flyerW / 2;
+      const targetTop  = exRect.top  + exRect.height / 2 - flyerH / 2;
+
+      // --- 4. 创建飞行卡片，锁定在卡片原始位置 ---
+      const flyer = document.createElement('img');
+      flyer.src = card.src;
+      flyer.className = 'flyer';
+      flyer.style.left   = originLeft + 'px';
+      flyer.style.top    = originTop + 'px';
+      flyer.style.width  = originWidth + 'px';
+      flyer.style.height = originHeight + 'px';
+      document.body.appendChild(flyer);
+
+      // 隐藏底部原卡片
+      card.classList.add('hidden');
+
+      // 播放插卡音效
+      insertAudio.currentTime = 0;
+      insertAudio.play().catch(() => {});
+
+      // --- 5. 强制重绘，确保初始位置生效 ---
+      flyer.offsetHeight;
+
+      // --- 6. 第一阶段：放大 + 滑到艾克斯中心 ---
+      flyer.style.left   = targetLeft + 'px';
+      flyer.style.top    = targetTop + 'px';
+      flyer.style.width  = flyerW + 'px';
+      flyer.style.height = flyerH + 'px';
+
+      // --- 7. 到达后：艾克斯闪烁 ---
+      setTimeout(() => {
+        exImg.classList.add('flash');
+      }, 700);
+
+      // --- 8. 闪烁结束后：卡片滑回原位 ---
+      setTimeout(() => {
+        exImg.classList.add('flash');
+
+        // 卡片回到原始位置和尺寸
+        flyer.style.left   = originLeft + 'px';
+        flyer.style.top    = originTop + 'px';
+        flyer.style.width  = originWidth + 'px';
+        flyer.style.height = originHeight + 'px';
+      }, 1500);
+
+      // --- 9. 滑回完成：移除飞行卡片，恢复原卡片 ---
+      setTimeout(() => {
+        flyer.remove();
+        card.classList.remove('hidden');
+        busy = false;
+      }, 2200); // 700ms(去) + 700ms(回)
+    });
+  </script>
+</body>
+</html>
