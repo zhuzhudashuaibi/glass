@@ -1,0 +1,58 @@
+
+
+/* 风扇外框防护网 */
+.fan-wrapper{
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  border: 8px solid #d1d1d1;
+  position: relative;
+}
+/* 扇叶旋转容器 */
+.fan-blades{
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  animation: rotate 0.4s linear infinite;
+}
+/* 单片弧形扇叶样式 */
+.blade{
+  width: 45%;
+  height: 22px;
+  background: linear-gradient(135deg, #2196F3, #0066cc);
+  border-radius: 50% 90% 50% 90%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: 0 center;
+}
+.blade:nth-child(1){
+  transform: translateY(-50%) rotate(0deg);
+}
+.blade:nth-child(2){
+  transform: translateY(-50%) rotate(120deg);
+}
+.blade:nth-child(3){
+  transform: translateY(-50%) rotate(240deg);
+}
+/* 中心转轴盖子 */
+.fan-center{
+  width: 26px;
+  height: 26px;
+  background: #004b99;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  z-index: 10;
+}
+/* 旋转动画 */
+@keyframes rotate {
+  0%{transform: rotate(0deg);}
+  100%{transform: rotate(360deg);}
+}
+/* 鼠标悬停暂停转动 */
+.fan-wrapper:hover .fan-blades{
+  animation-play-state: paused;
+}
