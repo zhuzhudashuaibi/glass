@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="wuziqi.css">
     <link rel="stylesheet" href="xiaoniu.css">
+    <link rel="stylesheet" href="fans.css">
     <!-- <script type="module" src="ionicons.designerpack"> </script> -->
     <script type="module" src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.js"></script>
@@ -40,20 +41,21 @@
     </div>
 
 
-        <div id="text" >
+    <div id="text" >
         <div class="glass" id="t1">
                 <h2>8月热点</h2>
                 <p>夏日炎炎 各地迎来高温</p>
                 <p>祝大家清凉一夏 万事顺遂</p>
-                <p>CORTIS新歌《MOTION》于7.31上线</p>
-                <p>华为将在8月5日发布nova16 SE</p>
-                <p>红米K100 PRO发布会定档8月11日</p>
-                <p>高通宣布CPU将于9月全面涨价</p>
-                <p>建议现在入手骁龙芯片手机</p>
-                <p>腾讯自制《完美世界》剧场版定档8月8号</p>
-                <p>《中国人能飞》将在8月7日上线于Chalky Wong新专辑《BLDNESS》</p>
-                <p></p>
+                <p>给大家扇扇风[doge]</p>
+                <div class="fan-wrapper">
+                <div class="fan-blades">
+                    <div class="blade"></div>
+                    <div class="blade"></div>
+                    <div class="blade"></div>
+                </div>
+                <div class="fan-center"></div>
         </div>
+    </div>
     </div>
 
     <div id="text">
@@ -61,8 +63,9 @@
             <h2>网站日志</h2>
             <p>新增某人雕像(函数绘图加载稍慢)</p>
             <p>新增奥特曼变身器-艾克斯终端</p>
-            <p>位于灵动岛开源页</p>
-            <p>截至8月5号</p>
+            <p>位于灵动岛开源页最底部</p>
+            <p>修复邵恒手机之墓日期算错问题</p>
+            <p>截至8月6号</p>
         </div>
 
     </div>
@@ -81,7 +84,6 @@
 
     <div id="text" >
         <div class="glass" id="t4">
-                    <!-- ========五子棋组件 开始 直接复制嵌入你的页面======= -->
             <div id="t4-1">
                 <h2>五子棋(困难版)</h2>
             </div>
@@ -89,15 +91,14 @@
 
                 <div class="gobang-canvas" id="gobangCanvas">
                     <div class="gobang-tip" id="gobangTip">黑方先行，请落子</div>
-                    <!-- 棋盘线条由JS自动生成，无需手写 -->
                 </div>
             </div>
 
             <script>
             (function(){
-                const size = 15;    //15*15棋盘
-                const paddingPercent = 4; //和css padding:4% 保持一致
-                const stepPercent = 92 / (size - 1); //网格步长百分比
+                const size = 15;   
+                const paddingPercent = 4;
+                const stepPercent = 92 / (size - 1); 
 
                 const canvasDom = document.getElementById("gobangCanvas");
                 const tipDom = document.getElementById("gobangTip");
@@ -105,16 +106,13 @@
                 let map = Array(size).fill().map(()=>Array(size).fill(0));
                 let gameOver = false;
 
-                // =========自动绘制横竖棋盘线=========
                 function createBoardLine(){
-                    //横线
                     for(let i=0;i<size;i++){
                         const line = document.createElement("div");
                         line.className = "gobang-line gobang-h-line";
                         line.style.top = `${paddingPercent + i*stepPercent}%`;
                         canvasDom.appendChild(line);
                     }
-                    //竖线
                     for(let i=0;i<size;i++){
                         const line = document.createElement("div");
                         line.className = "gobang-line gobang-v-line";
@@ -124,20 +122,17 @@
                 }
                 createBoardLine();
 
-                // =========点击落子逻辑【核心：纯百分比坐标，永不错位】=========
+                //坐标
                 canvasDom.onclick = function(e){
                     if(gameOver) return;
                     const rect = canvasDom.getBoundingClientRect();
 
-                    //点击位置转换成相对于画布的百分比
                     const relX = (e.clientX - rect.left) / rect.width * 100;
                     const relY = (e.clientY - rect.top) / rect.height * 100;
 
-                    //计算最近交叉点
                     const x = Math.round((relX - paddingPercent) / stepPercent);
                     const y = Math.round((relY - paddingPercent) / stepPercent);
 
-                    //边界检测
                     if(x<0||x>=size||y<0||y>=size||map[y][x]) return;
 
                     placeChess(x,y,1);
@@ -150,7 +145,6 @@
                     setTimeout(aiPlay,350);
                 }
 
-                //放置棋子，百分比定位
                 function placeChess(x,y,type){
                     map[y][x] = type;
                     const chess = document.createElement("div");
@@ -160,7 +154,7 @@
                     canvasDom.appendChild(chess);
                 }
 
-                //五子连线判断
+                //连线判断
                 function checkWin(px,py,player){
                     const dirs=[[1,0],[0,1],[1,1],[1,-1]];
                     for(let [dx,dy] of dirs){
@@ -180,19 +174,6 @@
                     return false;
                 }
             
-                //简易AI
-                /**
- * AI落子主函数【增强攻防版】
- * 思路：遍历所有空点位，给每个位置打分，选择分数最高的点位落子
- * 优先级：成五 > 堵五 > 冲四 > 堵冲四 > 活三 > 堵活三 > 眠三 > 防守 > 普通拓展
- */
-
-// ====================== 【增强AI核心模块 带完整注释】======================
-/**
- * AI自动落子主入口
- * 逻辑：遍历所有空位打分，选择全局最高分点位
- * 权重策略：进攻优先，同时强力防守对手杀招
- */
 function aiPlay() {
     if (gameOver) return;
 
@@ -200,26 +181,20 @@ function aiPlay() {
     let bestX = 7;
     let bestY = 7;
 
-    // 遍历棋盘所有空位
     for (let y = 0; y < size; y++) {
         for (let x = 0; x < size; x++) {
             if (map[y][x] !== 0) continue;
 
-            // 模拟AI落子，计算进攻分
             map[y][x] = 2;
             const attackScore = getPointScore(x, y, 2);
 
-            // 模拟玩家落子，计算防守分
             map[y][x] = 1;
             const defendScore = getPointScore(x, y, 1);
 
-            // 清空模拟
             map[y][x] = 0;
 
-            // 进攻权重系数1.15，数值越大AI越激进；调低偏向保守防守
             const totalScore = attackScore * 1.15 + defendScore;
 
-            // 更新最优坐标
             if (totalScore > bestScore) {
                 bestScore = totalScore;
                 bestX = x;
@@ -228,10 +203,8 @@ function aiPlay() {
         }
     }
 
-    // AI在最优位置落子
     placeChess(bestX, bestY, 2);
 
-    // 判断AI获胜
     if (checkWin(bestX, bestY, 2)) {
         tipDom.innerText = "人机胜利";
         gameOver = true;
@@ -242,14 +215,13 @@ function aiPlay() {
 }
 
 /**
- * 给单个坐标进行局势打分
- * @param {number} x 坐标
- * @param {number} y 坐标
- * @param {number} chessType 1玩家 / 2AI
- * @returns {number} 分数
+ * 打分
+ * @param {number} x
+ * @param {number} y 
+ * @param {number} chessType 
+ * @returns {number} 
  */
 function getPointScore(x, y, chessType) {
-    // 四个检索方向
     const dirs = [[1, 0], [0, 1], [1, 1], [1, -1]];
     let total = 0;
 
@@ -259,17 +231,16 @@ function getPointScore(x, y, chessType) {
         const leftOpen = info.left;
         const rightOpen = info.right;
 
-        // 五子棋标准分值梯度
-        if (linkCount >= 5) total += 100000;    // 五连，直接必胜
+        if (linkCount >= 5) total += 100000;    //5
         else if (linkCount === 4) {
-            if (leftOpen && rightOpen) total += 20000; // 活四
-            else total += 8000;                        // 冲四
+            if (leftOpen && rightOpen) total += 20000; // 4
+            else total += 8000;                        
         } else if (linkCount === 3) {
-            if (leftOpen && rightOpen) total += 3000;  // 活三
-            else total += 600;                         // 眠三
+            if (leftOpen && rightOpen) total += 3000;  // 3
+            else total += 600;                       
         } else if (linkCount === 2) {
-            if (leftOpen && rightOpen) total += 400;   // 活二
-            else total += 100;                         // 眠二
+            if (leftOpen && rightOpen) total += 400;   // 2
+            else total += 100;                         
         } else if (linkCount === 1) {
             total += 15;
         }
@@ -278,12 +249,11 @@ function getPointScore(x, y, chessType) {
 }
 
 /**
- * 沿着单一方向统计：连续棋子数量、两端是否有空位
  * @param {number} x
  * @param {number} y
- * @param {number} dx 方向增量x
- * @param {number} dy 方向增量y
- * @param {number} self 棋子类型
+ * @param {number} dx 
+ * @param {number} dy 
+ * @param {number} self 
  * @returns {{count:number, left:boolean, right:boolean}}
  */
 function getLineInfo(x, y, dx, dy, self) {
@@ -291,7 +261,6 @@ function getLineInfo(x, y, dx, dy, self) {
     let leftOpen = false;
     let rightOpen = false;
 
-    // 正方向延伸查找同色
     let nx = x + dx;
     let ny = y + dy;
     while (nx >= 0 && nx < size && ny >= 0 && ny < size && map[ny][nx] === self) {
@@ -299,12 +268,12 @@ function getLineInfo(x, y, dx, dy, self) {
         nx += dx;
         ny += dy;
     }
-    // 正向外侧是否空位
+
     if (nx >= 0 && nx < size && ny >= 0 && ny < size && map[ny][nx] === 0) {
         rightOpen = true;
     }
 
-    // 反方向延伸查找同色
+
     nx = x - dx;
     ny = y - dy;
     while (nx >= 0 && nx < size && ny >= 0 && ny < size && map[ny][nx] === self) {
@@ -312,7 +281,7 @@ function getLineInfo(x, y, dx, dy, self) {
         nx -= dx;
         ny -= dy;
     }
-    // 反向外侧是否空位
+
     if (nx >= 0 && nx < size && ny >= 0 && ny < size && map[ny][nx] === 0) {
         leftOpen = true;
     }
@@ -320,37 +289,15 @@ function getLineInfo(x, y, dx, dy, self) {
     return { count, left: leftOpen, right: rightOpen };
 }
 
-/**
- * 重置按钮绑定
- */
+
 resetBtn.addEventListener("click", initBoard);
 
-// 页面加载完成，初始化游戏
+
 window.onload = initBoard;
-/**
 
-//  * 清空整个棋盘、重置游戏状态
-//  */
-// function clearBoard() {
-//     // 重置棋盘数组数据
-//     for(let y = 0; y < size; y++){
-//         for(let x = 0; x < size; x++){
-//             map[y][x] = 0;
-//         }
-//     }
-//     gameOver = false;
-//     currentPlayer = 1;
-//     tipDom.innerText = "游戏重新开始，请落子";
-
-//     // 删除页面上所有棋子DOM元素
-//     document.querySelectorAll(".cell > div").forEach(chessDom => {
-//         chessDom.remove();
-//     });
-// }
 
 })();
             </script>
-            <!-- ========五子棋组件 结束======= -->
     </div>
     </div>
 
@@ -391,7 +338,6 @@ window.onload = initBoard;
             </div>
 
             <div id="board" style="margin-top: 10px;"></div>
-            <!-- 胜负提示DIV -->
             <div id="resultBox"></div>
 
             <div class="btn-row" style="margin-top: 10px;">
@@ -687,14 +633,14 @@ window.onload = initBoard;
                     <script>
                         var date1 = new Date('2023-01-01 00:00:00');
                         var date2 = new Date();
-                        var diffTime = (date2 - date1) / 1000; // 将毫秒转换为秒
+                        var diffTime = (date2 - date1) / 1000;
 
-                        var days = Math.floor(diffTime / 86400); // 计算天数
+                        var days = Math.floor(diffTime / 86400);
                         var years = Math.floor(days / 365);
 
-                        var hours = Math.floor((diffTime % 86400) / 3600); // 计算小时数
-                        var minutes = Math.floor((diffTime % 3600) / 60); // 计算分钟数
-                        var seconds = Math.floor(diffTime % 60); // 计算秒数
+                        var hours = Math.floor((diffTime % 86400) / 3600); 
+                        var minutes = Math.floor((diffTime % 3600) / 60); 
+                        var seconds = Math.floor(diffTime % 60); 
                         document.getElementById("turtletime").innerHTML = "我们已经相识" + years +"年" + days + "天" + hours + "小时" + minutes + "分" + seconds + "秒";
                     </script>
                 </p>
@@ -713,7 +659,6 @@ window.onload = initBoard;
                 <p>祝你天天开心</p>
                 <p>awa</p>
     </div>
-    <!-- 文章 -->
     <div id="foot"></div>
 </body>
 </html>
