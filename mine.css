@@ -164,23 +164,33 @@ p{
 
 #t2{
     border-radius: 25px;
-    width: 100%;
+    width: 80%;
     height: 30rem;
-    padding: 1rem;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
-    gap: 1rem;
-
-}
-#t2 div{
-    margin: 0;
-    width: 60%;
-    height: 100%;
     padding: 1rem;
-    border-radius: 25px;
-
+    gap: 1rem;
 }
+
+#boxWrap {
+            width: 800px;
+            height: 500px;
+            border: 2px solid #ffffff;
+            position: relative;
+            overflow: hidden;
+            background: #ffffff;
+}
+#boxWrap p {
+            position: absolute;
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            white-space: nowrap;
+}
+
+
 #t3{
     width: 80%;
     height: 20rem;
@@ -199,7 +209,6 @@ p{
     overflow-y: auto;
 
 }
-
 
 /* 文章 */
 #foot{
