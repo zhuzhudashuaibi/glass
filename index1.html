@@ -122,7 +122,7 @@
                 }
                 createBoardLine();
 
-                //坐标
+                
                 canvasDom.onclick = function(e){
                     if(gameOver) return;
                     const rect = canvasDom.getBoundingClientRect();
@@ -355,23 +355,23 @@ window.onload = initBoard;
             let data = [];
             let startPos = {r:0,c:0};
 
-            // 当前模式：6 / 8 / 10
+            
             let modeN = 6;
             let maxChance = 3;
             let chance = 3;
             let gameOver = false;
 
-            // 获取DOM（全部ID获取）
+            
             const resultBox = document.getElementById("resultBox");
             const chanceNum = document.getElementById("chanceNum");
             const remainNum = document.getElementById("remainNum");
             const boardDom = document.getElementById("board");
 
-            // 隐藏提示
+            
             function hideTip(){
                 resultBox.style.display = "none";
             }
-            // 展示提示
+            
             function showTip(text, isWin){
                 resultBox.innerText = text;
                 resultBox.className = "";
@@ -379,10 +379,10 @@ window.onload = initBoard;
                 resultBox.style.display = "block";
             }
 
-            // 切换棋盘模式 N色 = N行N列
+            
             function setMode(n){
                 modeN = n;
-                // 清除激活
+                
                 document.getElementById("btnM6").classList.remove('active');
                 document.getElementById("btnM8").classList.remove('active');
                 document.getElementById("btnM10").classList.remove('active');
@@ -391,7 +391,7 @@ window.onload = initBoard;
                 if(n === 10) document.getElementById("btnM10").classList.add("active");
             }
 
-            // 设置容错次数
+            
             function setTolerance(count){
                 maxChance = count;
                 document.getElementById("btnT4").classList.remove('active');
@@ -403,7 +403,7 @@ window.onload = initBoard;
                 initGame();
             }
 
-            // 获取四邻坐标
+            
             function around(r,c){
                 const dir = [[-1,0],[1,0],[0,-1],[0,1]];
                 let list = [];
@@ -414,13 +414,13 @@ window.onload = initBoard;
                 return list;
             }
 
-            // 生成随机关卡地图
+            
             function createRandomMap(){
                 const useColors = allColors.slice(0, modeN);
-                // N * N 空白地图
+                
                 map = Array(modeN).fill().map(()=>Array(modeN).fill(null));
 
-                // 每个颜色创建种子起点
+                
                 for(let i=0;i<modeN;i++){
                     let r,c;
                     let ok = false;
@@ -435,7 +435,7 @@ window.onload = initBoard;
                     if(ok) map[r][c] = useColors[i];
                 }
 
-                // 收集空白格子
+                
                 let empty = [];
                 for(let r=0;r<modeN;r++){
                     for(let c=0;c<modeN;c++){
@@ -444,7 +444,7 @@ window.onload = initBoard;
                 }
                 empty.sort(()=>Math.random()-0.5);
 
-                // 扩散填充色块
+                
                 for(let cell of empty){
                     const {r,c} = cell;
                     const near = around(r,c);
@@ -457,7 +457,7 @@ window.onload = initBoard;
                     }
                 }
 
-                // 寻找第一个颜色，随机放置初始固定小牛
+                
                 const firstColor = useColors[0];
                 let candidates = [];
                 for(let r=0;r<modeN;r++){
@@ -474,7 +474,7 @@ window.onload = initBoard;
                 initGame();
             }
 
-            // 初始化游戏数据
+            
             function initGame(){
                 hideTip();
                 chance = maxChance;
@@ -491,12 +491,12 @@ window.onload = initBoard;
                     }
                     data.push(row);
                 }
-                // 放置不可删除初始小牛
+                
                 data[startPos.r][startPos.c].cow = true;
                 render();
             }
 
-            // 渲染棋盘
+            
             function render(){
                 boardDom.innerHTML = "";
                 boardDom.style.gridTemplateColumns = `repeat(${modeN},1fr)`;
@@ -524,31 +524,31 @@ window.onload = initBoard;
                 chanceNum.innerText = chance;
                 remainNum.innerText = modeN - cowCount;
 
-                // 胜利条件：小牛总数 = 颜色总数modeN
+                
                 if(cowCount === modeN && !gameOver){
                     gameOver = true;
                     showTip("🎉恭喜通关！", true);
                 }
             }
 
-            // 判断坐标是否可以放牛
+            
             function canPlace(r,c){
                 const color = data[r][c].color;
-                // 同色不能存在其他牛
+                
                 for(let i=0;i<modeN;i++){
                     for(let j=0;j<modeN;j++){
                         if(data[i][j].color === color && data[i][j].cow) return false;
                     }
                 }
-                // 同行
+                
                 for(let j=0;j<modeN;j++){
                     if(data[r][j].cow) return false;
                 }
-                // 同列
+                
                 for(let i=0;i<modeN;i++){
                     if(data[i][c].cow) return false;
                 }
-                // 四邻禁止有牛
+                
                 const near = around(r,c);
                 for(let [nr,nc] of near){
                     if(data[nr][nc].cow) return false;
@@ -556,19 +556,19 @@ window.onload = initBoard;
                 return true;
             }
 
-            // 格子点击事件
+            
             function click(r,c){
                 if(gameOver) return;
-                // 初始小牛禁止操作
+                
                 if(r === startPos.r && c === startPos.c) return;
 
-                // 点击小牛，移除
+                
                 if(data[r][c].cow){
                     data[r][c].cow = false;
                     render();
                     return;
                 }
-                // 错误标记格子禁止点击
+                
                 if(data[r][c].cross) return;
 
                 if(canPlace(r,c)){
@@ -587,7 +587,7 @@ window.onload = initBoard;
                 }
             }
 
-            // 默认加载 6色6×6
+            
             createRandomMap();
             </script>
     </div>
