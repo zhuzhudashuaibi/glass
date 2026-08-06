@@ -1,151 +1,241 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="glassMy.css">
-    <link rel="stylesheet" href="mine.css">
-    <!-- <script type="module" src="ionicons.designerpack"> </script> -->
-    <script type="module" src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.js"></script>
-    <link href="https://fontsapi.zeoseven.com/522/main/result.css" onload="this.rel='stylesheet'" rel="preload" as="style" crossorigin />
-    <noscript><link rel="stylesheet" href="https://fontsapi.zeoseven.com/522/main/result.css" /></noscript>
-</head>
-<body>
-        <!-- <div id="float">
-        \ </div> -->
-    <div class="" id="head">
-        <div class="glass" id="island">
-            <a href="index1.html" class="green" id="head-a" class="glass" style=":hover{background-color:rgba(100, 255, 123, 0.5);}"><ion-icon name="home-outline" id="icon"></ion-icon></a>
-            <a href="project.html" class="yellow" id="head-a" class="glass" style=":hover background-color:rgba(255, 255, 100, 0.5);"><ion-icon name="grid-outline" id="icon"></ion-icon></a>
-            <a href="mine.html" class="red" id="head-a" class="glass" style=":hover background-color:rgba(255, 100, 100, 0.5);"><ion-icon name="phone-portrait-outline" id="icon"></ion-icon></a>
-        </div>  
-    </div>
-    <!-- 岛写完了 -->
-    <div id="text-first">
-        <div>
-            <h1>个人介绍</h1>
-        </div>
-    </div>
+@import url("https://fontsapi.zeoseven.com/522/main/result.css");
 
-    <div id="text">
-        <div class="glass" id="t1">
-            <h1 style="text-align: center;">身份证</h1>
-            <p>姓名:qiqi</p>
-            <p>用户名:zhuzhu2012</p>
-            <p>全名:zhuzhudashuaibi</p>
-            <p id="age">
-                <script>
-                        var date1 = new Date('2012-06-01 00:00:00');
-                        var date2 = new Date();
-                        var diffTime = (date2 - date1) / 1000; // 将毫秒转换为秒
+html,body{
+    width: 98%;
+    height: 100%;
+    background-color: rgb(255, 255, 255);
+}
+body{
+    font-family: "致一宋體";
+        font-weight: normal;
+}
 
-                        var days = Math.floor(diffTime / 86400); // 计算天数
-                        var years = Math.floor(days / 365);
-                        var day = days - years * 365
-                        var hours = Math.floor((diffTime % 86400) / 3600); // 计算小时数
-                        var minutes = Math.floor((diffTime % 3600) / 60); // 计算分钟数
-                        var seconds = Math.floor(diffTime % 60); // 计算秒数
-                        document.getElementById("age").innerHTML = "年龄:" + years +"年" + day + "天" + hours + "小时" + minutes + "分" + seconds + "秒";
-                </script>
-            </p>
-            <p>性别:男</p>
-            <p>IP: 太阳系地球亚洲中国辽宁省</p>
-        </div>
-    </div>
-
-    <div id="text">
-        <div id="t2">
-            <div class="glass" id="t2-1">
-                <h1 style="text-align: center; margin: 0;"> 
-                    <ion-icon name="heart-outline"></ion-icon>
-                </h1>
-                <p>CUBEER</p>
-                <p>信竞</p>
-                <p>M78星人</p>
-                <p>JDM</p>
-                <p>客制化</p>
-                <p>5分配大佬</p>
-                <p>队长的星光海</p>
-                <p>摄影人机</p>
-                <p>前端UI</p>
-            </div>
-            <div class="glass" id="t2-2">
-                <h1 style="text-align: center; margin: 0;">
-                    <ion-icon name="game-controller-outline"></ion-icon>
-                </h1>
-                <p>短剑玩家</p>
-                <p>迷你世界卡卡</p>
-                <p>寂静岭居民</p>
-                <p>魔王C+</p>
-                <p>起床1v31</p>
-                <p>奥系10年玩家</p>
-                <p>G胖信徒</p>
-                <P>5星好市民</P>
-                <p>格斗进化重生</p>
-
-            </div>
-        </div>
-    </div>
-
-    <div id="text">
-        <div class="glass" id="t3">
-            <h1>账号</h1>
-            <p>本人已脱离世俗</p>
-            <p>无快手抖音账号</p>
-            <p>只刷暗网(视频号)</p>
-            <p>网易云10级大佬</p>
-            <p>网易MC大蛇</p>
-            <p>以上软件我都叫zhuzhu2012</p>
-            <p>大部分游戏也是这个名</p>
-            <p>网易云为zhuzhu_2012</p>
-            <h2>QQ:3380491552</h2>
-            <h2>微信号:zhuzhudashuaibi_2012</h2>
-            <h2>邮箱:13940725550@163.com</h2>
-            <h2>手机号:13940725550</h2>
-            
-        </div>
-    </div>
-
-    <div id="text">
-        <div class="glass" id="t4">
-            <h1 style="text-align: center;">封神榜</h1>
-            <p>准哥 准2.0 三个水</p>
-            <p>1祖苹3 3392 Drzh Q 卡卡熙小号</p>
-            <p>Y. 程三金 Shunliz</p>
-            <p>洋帆起航 章鱼哥 累了 踢球的兄弟们</p>
-            <p>CODM群的78位兄弟</p>
-            <h3>谢谢你们(想上榜可以私信)</h3>
-        </div>
-    </div>
-    <h1 style="text-align: center; padding-top: 2rem;">技术指导人员:小井井(大蛇)</h1>
-    <h2 style="text-align: center;">jimjcy.top</h2>
-
-    <div id="fen">
-            <div id="fen1">
-                <p>邵恒手机之墓</p>
-                <p id="mu">
-                    <script>
-                        var date1 = new Date('2026-05-16 00:00:00');
-                        var date2 = new Date();
-                        var diffTime = (date2 - date1) / 1000; // 将毫秒转换为秒
-
-                        var days = Math.floor(diffTime / 86400); // 计算天数
-
-                        document.getElementById("mu").innerHTML ="已死" + days +"天";
-                    </script>
-
-                </p>
-
-            </div>
-            <div id="fen2"></div>
-    </div>
-
-    <h1 style="margin-top: 30%; text-align: center;">13940725550</h1>
-
-        <div id="foot"></div>
+@keyframes a{
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to{
+        opacity: 1;
+        transform: translateY(0);
+    }
     
+}
+/* #float{
+    width: 20px;
+    height: 20px;
+    float: ;
+    background-color: aqua;
+} */
+#head{
+    z-index: 999999999;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    top: 0;
+    left: 0;
+    position: fixed;
+    width: 100%;
+    height: 5rem;
+    /* background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, rgba(129, 129, 129, 0.4) 70%,rgba(255, 255, 255, 0) 100%); */
+}
+
+#island{
+    z-index: 8888888888888888;
+    display: flex;
+    width: 3rem;
+    height: 2.7rem;
+    border-radius: 100px;
+    background-color: rgba(255, 255, 255, 0.2);
+    transition: all 0.5s cubic-bezier(0.68, -0.35, 0.265, 1.55);
+
+/* transition: all 0.5s cubic-bezier(0.68, -0.75, 0.265, 1.55); */
+    flex-wrap: nowrap;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    justify-items: center;
+
+}
+#island:hover{
+    transition: all 0.4s cubic-bezier(0.68,0.9, 0.265, 1.55);
+    top: 0 ;
+    margin-top: 1rem;
+    width: 300px;
+    height: 4.5rem;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+#head-a{
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0);
+    transition: all 0.5s cubic-bezier(0.68, -0.75, 0.265, 1.55);
+    height: 0px;
+    display: flex;
+    width: 0px;
+    font-size:0rem;
+    border-radius: 99px;
+    align-items: center;
+
+}
+
+.green:hover{
+    background-color:rgba(100, 255, 123, 0.5);
+}
+.yellow:hover{
+    background-color:rgba(255, 255, 100, 0.5);
+}
+.red:hover{
+    background-color:rgba(255, 100, 100, 0.5);
+}
+
+#island:hover #head-a{
+    color: rgb(0, 0, 0);
+    align-items: center;
+    font-size:1.8rem;
     
-</body>
-</html>
+    width: 18%;
+    height: 56px;
+    -webkit-tap-highlight-color: transparent;
+}
+#island:hover #head-a:hover{
+    transform: scale(0.9);
+}
+#icon{
+    transition: all 0.5s cubic-bezier(0.68, -0.75, 0.265, 1.55);
+}
+/* 岛 */
+
+
+#text-first{
+    width: 100%;
+    height: 30%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+#text-first div{
+    width: auto;
+    height: auto;
+    padding-top: 7rem;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 1vh;
+}
+#text-first div h1{
+    font-size: 10vw;
+    margin: 0;
+    top: 0;
+    animation: a 1s cubic-bezier(0.68, -0.75, 0.265, 1.55) forwards;
+}
+#text-first div h2{
+    font-size: 6vw;
+    margin: 0;
+    top: 0;
+    animation: a 1.5s cubic-bezier(0.68, -0.75, 0.265, 1.55) forwards;
+}
+
+#text{
+    width: 100%;
+    background-color: rgba(0, 255, 255, 0);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding-top: 3rem;
+    animation: a 1.3s cubic-bezier(0.68, -0.75, 0.265, 1.55) forwards;
+}
+#t1{
+    border-radius: 25px;
+    width: 80%;
+    height: 74%;
+    padding: 1rem;
+    overflow-x: auto;
+    overflow-y: auto;
+}
+p{
+    font-size: 20px;
+}
+
+#t2{
+    border-radius: 25px;
+    width: 80%;
+    height: 30rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    gap: 1rem;
+}
+
+#boxWrap {
+            width: 800px;
+            height: 500px;
+            border: 2px solid #ffffff;
+            position: relative;
+            overflow: hidden;
+            background: #ffffff;
+}
+#boxWrap p {
+            position: absolute;
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            white-space: nowrap;
+}
+
+
+#t3{
+    width: 80%;
+    height: 20rem;
+    border-radius: 25px;
+    padding: 1rem;
+        overflow-x: auto;
+    overflow-y: auto;
+}
+
+#t4{
+        width: 80%;
+    height: 20rem;
+    border-radius: 25px;
+    padding: 1rem;
+        overflow-x: auto;
+    overflow-y: auto;
+
+}
+
+/* 文章 */
+#foot{
+    width: 100%;
+    height: 50%;
+}
+
+#fen{
+    padding-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+#fen1{
+    background-color: rgb(142, 142, 142);
+    width: 10rem;
+    height: 16rem;
+    border-radius: 999px 999px 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+}
+#fen2{
+    background-color: rgb(142, 142, 142);
+    width: 14rem;
+    height: 4rem;
+}
