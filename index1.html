@@ -61,12 +61,10 @@
     <div id="text">
         <div class="glass" id="t5">
             <h2>网站日志</h2>
-            <p>新增奥特曼变身器-艾克斯终端</p>
-            <p>位于灵动岛开源页最底部</p>
-            <p>修复邵恒手机之墓日期算错问题</p>
-            <p>新增小风扇</p>
-            <p>更改介绍页个性标签样式</p>
-            <p>截至8月6号</p>
+            <p>更新shunliz彩蛋</p>
+            <p>更新矩阵乘法计算器</p>
+            <p>修复邵俊恒手机之墓日期算错问题</p>
+            <p>截至8月12号</p>
         </div>
 
     </div>
@@ -613,6 +611,110 @@ window.onload = initBoard;
     </div>
 
 
+
+    <div id="text">
+        <div id="t10" class="glass">
+            <h2>矩阵乘法计算器</h2>
+        <div class="matrix-box">
+        <h3>矩阵A</h3>
+        <div id="matrixA">
+            <table>
+                <tr>
+                    <td><input id="a00" type="number" value="0"></td>
+                    <td><input id="a01" type="number" value="0"></td>
+                </tr>
+                <tr>
+                    <td><input id="a10" type="number" value="0"></td>
+                    <td><input id="a11" type="number" value="0"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="matrix-box">
+        <h3>矩阵B</h3>
+        <div id="matrixB">
+            <table>
+                <tr>
+                    <td><input id="b00" type="number" value="0"></td>
+                    <td><input id="b01" type="number" value="0"></td>
+                </tr>
+                <tr>
+                    <td><input id="b10" type="number" value="0"></td>
+                    <td><input id="b11" type="number" value="0"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="matrix-box">
+        <button id="calcBtn" style="margin-top: 1rem;">计算 A × B</button>
+        <span id="errorTip"></span>
+        <div id="resultArea">
+            <h3>计算结果矩阵 C = A × B</h3>
+            <div id="resultMatrix"></div>
+        </div>
+    </div>
+    <script>
+function readMatrix() {
+    const matA = [
+        [Number(document.getElementById('a00').value), Number(document.getElementById('a01').value)],
+        [Number(document.getElementById('a10').value), Number(document.getElementById('a11').value)]
+    ];
+    const matB = [
+        [Number(document.getElementById('b00').value), Number(document.getElementById('b01').value)],
+        [Number(document.getElementById('b10').value), Number(document.getElementById('b11').value)]
+    ];
+    return {matA, matB};
+}
+
+function matrixMultiply(m1, m2) {
+    if (m1[0].length !== m2.length) return null;
+    const resRows = m1.length;
+    const resCols = m2[0].length;
+    const midLen = m2.length;
+    let result = Array(resRows).fill().map(() => Array(resCols).fill(0));
+    for (let i = 0; i < resRows; i++) {
+        for (let j = 0; j < resCols; j++) {
+            let sum = 0;
+            for (let k = 0; k < midLen; k++) {
+                sum += m1[i][k] * m2[k][j];
+            }
+            result[i][j] = sum;
+        }
+    }
+    return result;
+}
+
+function renderResult(matrix) {
+    let html = '<table>';
+    for (let i = 0; i < matrix.length; i++) {
+        html += '<tr>';
+        for (let j = 0; j < matrix[0].length; j++) {
+            html += `<td><input value="${matrix[i][j]}" readonly style="background:#eef2ff"></td>`;
+        }
+        html += '</tr>';
+    }
+    html += '</table>';
+    document.getElementById('resultMatrix').innerHTML = html;
+}
+
+document.getElementById('calcBtn').addEventListener('click', function(){
+    document.getElementById('errorTip').innerText = '';
+    const {matA, matB} = readMatrix();
+    const product = matrixMultiply(matA, matB);
+    if (!product) {
+        document.getElementById('errorTip').innerText = '矩阵相乘规则错误！';
+        document.getElementById('resultMatrix').innerHTML = '';
+        return;
+    }
+    renderResult(product);
+});
+    </script>
+    </div>
+</div>
+
+
 <div id="foot"></div>
 <div id="foot"></div>
 <div id="foot"></div>
@@ -645,12 +747,10 @@ window.onload = initBoard;
                         document.getElementById("turtletime").innerHTML = "我们已经相识" + years +"年" + days + "天" + hours + "小时" + minutes + "分" + seconds + "秒";
                     </script>
                 </p>
-                <p>这一路感受过快乐难过</p>
-                <p>也追逐过日升月落</p>
-                <p>行至此地 很不容易</p>
-                <p>感谢你陪我走到今天</p>
-                <p style="padding-top: 300px;">给你1000部苹果手机<ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon></p>
-                <p>想要上榜的可以联系我哈</p>
+                <p>我真的害怕</p>
+                <p>我怕你走又怕你未至</p>
+                <p style="padding-top: 400px;">给你1000部苹果手机<ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon></p>
+                <p>听你的 慢慢来</p>
         </div>
     </div>
     <div id="ppp">
