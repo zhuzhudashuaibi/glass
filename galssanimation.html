@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Faerghus Holy Kingdom · Glass Cube Animation</title>
+<style>
+  /* ============ 基础 ============ */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%;
+    background: #f6f3ec;
+    color: #111;
+    overflow-x: hidden;
+    font-family: "Times New Roman", "Georgia", "SimSun", serif;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 16px 80px;
+  }
+
+  /* ============ 海报本体（竖版 A3 比例） ============ */
+  .poster {
+    position: relative;
+    width: min(900px, 100%);
+    aspect-ratio: 3 / 4;
+    background: #f6f3ec;
+    overflow: hidden;
+    border-radius: 6px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.15);
+  }
+
+  /* ============ 背景装饰：细圆圈线条 ============ */
+  .bg-circle {
+    position: absolute;
+    border: 1px solid rgba(40, 40, 120, 0.25);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .bg-circle.c1 { width: 62%; height: 62%; top: -10%; left: -10%; }
+  .bg-circle.c2 { width: 55%; height: 55%; top: 55%; left: 15%; border-style: dashed; border-color: rgba(40, 40, 120, 0.18); }
+  .bg-circle.c3 { width: 40%; height: 40%; top: 20%; right: -10%; border-color: rgba(40, 40, 120, 0.35); }
+
+  /* ============ 左上小文字 ============ */
+  .tag-tl {
+    position: absolute;
+    top: 18px;
+    left: 28px;
+    font-family: "Helvetica", "Arial", sans-serif;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: #111;
+    line-height: 1.5;
+    text-transform: uppercase;
+  }
+  .tag-tl .sub { opacity: 0.55; letter-spacing: 2px; }
+
+  /* ============ 右上标签 + 蓝色盾牌 ============ */
+  .tag-tr {
+    position: absolute;
+    top: 24px;
+    right: 28px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    font-family: "Helvetica", "Arial", sans-serif;
+  }
+  .tag-tr .titles {
+    text-align: right;
+    line-height: 1.2;
+  }
+  .tag-tr .titles .t1 {
+    font-size: 13px;
+    letter-spacing: 2px;
+    font-weight: 700;
+  }
+  .tag-tr .titles .t2 {
+    font-size: 18px;
+    letter-spacing: 1.5px;
+    font-weight: 900;
+    margin-top: 3px;
+  }
+  .tag-tr .titles .t3 {
+    font-size: 17px;
+    letter-spacing: 1.8px;
+    font-weight: 900;
+    margin-top: 3px;
+  }
+  .tag-tr .titles .t4 {
+    font-size: 12px;
+    letter-spacing: 1px;
+    opacity: 0.7;
+    margin-top: 6px;
+  }
+  .shield {
+    width: 62px;
+    height: 74px;
+    background: #2a4bd7;
+    clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .shield::after {
+    content: "";
+    position: absolute;
+    inset: 28% 28% 28% 28%;
+    background: #fff;
+    clip-path: polygon(50% 0%, 62% 35%, 100% 38%, 70% 60%, 82% 100%, 50% 76%, 18% 100%, 30% 60%, 0% 38%, 38% 35%);
+    transform: scale(1.05);
+  }
+
+  /* ============ 超大衬线标题 ============ */
+  .title {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    font-family: "Times New Roman", "Georgia", serif;
+    font-weight: 900;
+    color: #111;
+    line-height: 0.82;
+    letter-spacing: -2px;
+    pointer-events: none;
+  }
+  .title.holy {
+    top: 30px;
+    font-size: clamp(110px, 21vw, 200px);
+    letter-spacing: -4px;
+  }
+  .title.kingdom {
+    top: 135px;
+    font-size: clamp(150px, 29vw, 280px);
+    letter-spacing: -5px;
+  }
+  .title.faerghus {
+    top: 47%;
+    font-size: clamp(140px, 28vw, 270px);
+    letter-spacing: -5px;
+    transform: translateY(-10%);
+  }
+  .title.blue {
+    top: 60%;
+    font-size: clamp(260px, 52vw, 520px);
+    letter-spacing: -10px;
+    transform: translateY(-6%);
+    color: #111;
+  }
+  .title.lions {
+    top: 72%;
+    font-size: clamp(200px, 42vw, 420px);
+    letter-spacing: -8px;
+  }
+
+  /* ============ 信息网格：Location / Academy / Region ============ */
+  .info-grid {
+    position: absolute;
+    top: 35%;
+    left: 28px;
+    right: 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 18px;
+    font-family: "Helvetica", "Arial", sans-serif;
+    z-index: 3;
+  }
+  .info-grid .label {
+    font-size: 15px;
+    letter-spacing: 2.5px;
+    opacity: 0.5;
+    margin-bottom: 6px;
+  }
+  .info-grid .value {
+    font-size: clamp(20px, 3vw, 30px);
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    line-height: 1.15;
+  }
+  .info-grid .center { text-align: center; }
+  .info-grid .right  { text-align: right; }
+
+  /* ============ 左右角色名单 ============ */
+  .names-left, .names-right {
+    position: absolute;
+    top: 63%;
+    font-family: "Helvetica", "Arial", sans-serif;
+    font-weight: 700;
+    letter-spacing: 1px;
+    line-height: 2.1;
+    font-size: clamp(13px, 1.6vw, 17px);
+    z-index: 3;
+  }
+  .names-left  { left: 28px; }
+  .names-right { right: 28px; text-align: right; }
+
+  /* ============ 左下：2020 + 日文 ============ */
+  .bl-l {
+    position: absolute;
+    bottom: 70px;
+    left: 28px;
+    font-family: "Helvetica", "Arial", sans-serif;
+    z-index: 3;
+  }
+  .bl-l .y {
+    font-size: clamp(56px, 9vw, 92px);
+    font-weight: 900;
+    color: #2a4bd7;
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+  .bl-l .jp {
+    margin-top: 14px;
+    font-size: clamp(18px, 2.6vw, 26px);
+    line-height: 1.35;
+    font-weight: 600;
+  }
+  .bl-l .hint {
+    margin-top: 18px;
+    font-size: 10px;
+    opacity: 0.5;
+    letter-spacing: 1.2px;
+  }
+
+  /* ============ 右下：日期 + 设计师 ============ */
+  .bl-r {
+    position: absolute;
+    bottom: 70px;
+    right: 28px;
+    text-align: right;
+    font-family: "Times New Roman", "Georgia", serif;
+    font-weight: 900;
+    z-index: 3;
+  }
+  .bl-r .date {
+    font-size: clamp(80px, 15vw, 160px);
+    line-height: 0.85;
+    letter-spacing: -2px;
+  }
+  .bl-r .sign {
+    margin-top: 14px;
+    font-family: "Helvetica", "Arial", sans-serif;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    opacity: 0.55;
+  }
+  .bl-r .author {
+    position: absolute;
+    left: -320px;
+    bottom: 160px;
+    font-family: "Times New Roman", "Georgia", serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: clamp(14px, 2vw, 20px);
+    letter-spacing: 0.5px;
+    opacity: 0.85;
+    white-space: nowrap;
+  }
+
+  /* ============ 中间 overlay：OX Alpha 标签 ============ */
+  .ox-tag {
+    position: absolute;
+    top: 80%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: "Helvetica", "Arial", sans-serif;
+    font-weight: 900;
+    font-size: clamp(18px, 2.4vw, 24px);
+    letter-spacing: 0.5px;
+    background: #fff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.1);
+    z-index: 99;
+    user-select: none;
+  }
+
+  /* ============ 两个玻璃立方体舞台 ============ */
+  .scene {
+    position: absolute;
+    perspective: 1400px;
+    perspective-origin: 50% 50%;
+    z-index: 10;
+    cursor: grab;
+    touch-action: none;
+  }
+  .scene:active { cursor: grabbing; }
+
+  .scene.cube-1 { top: 8%; left: 22%; width: 45%; height: 30%; }
+  .scene.cube-2 { top: 55%; left: 38%; width: 40%; height: 32%; }
+
+  .cube {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transform: rotateX(-20deg) rotateY(35deg);
+    will-change: transform;
+  }
+
+  /* 6 个面 */
+  .face {
+    position: absolute;
+    inset: 0;
+    border: 1.2px solid rgba(255,255,255,0.55);
+    outline: 1px solid rgba(60, 60, 100, 0.25);
+    background:
+      linear-gradient(135deg,
+        rgba(255, 255, 255, 0.55) 0%,
+        rgba(255, 255, 255, 0.12) 45%,
+        rgba(255, 255, 255, 0.25) 100%);
+    backdrop-filter: blur(14px) saturate(180%) hue-rotate(0deg);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    filter: url(#glassDispersion) drop-shadow(0 10px 30px rgba(30, 50, 120, 0.25));
+    box-shadow:
+      inset 0 0 40px rgba(255, 255, 255, 0.5),
+      inset 10px 0 30px rgba(180, 200, 255, 0.15),
+      inset -10px 0 30px rgba(255, 180, 200, 0.15),
+      inset 0 -20px 40px rgba(180, 140, 255, 0.12);
+  }
+  .face::before {
+    content: "";
+    position: absolute;
+    top: 6%; left: 10%; right: 10%; height: 22%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0));
+    border-radius: 50% 50% 40% 40% / 80% 80% 20% 20%;
+    filter: blur(4px);
+    pointer-events: none;
+  }
+  .face::after {
+    content: "";
+    position: absolute;
+    bottom: 4%; left: 10%; right: 10%; height: 12%;
+    background: linear-gradient(0deg, rgba(30,40,90,0.18), rgba(30,40,90,0));
+    border-radius: 40% 40% 50% 50% / 30% 30% 70% 70%;
+    filter: blur(3px);
+    pointer-events: none;
+  }
+
+  .cube { --s: 1; }
+  .face.front  { transform: translateZ(calc(50% * var(--s))); }
+  .face.back   { transform: rotateY(180deg) translateZ(calc(50% * var(--s))); }
+  .face.right  { transform: rotateY( 90deg) translateZ(calc(50% * var(--s))); }
+  .face.left   { transform: rotateY(-90deg) translateZ(calc(50% * var(--s))); }
+  .face.top    { transform: rotateX( 90deg) translateZ(calc(50% * var(--s))); }
+  .face.bottom { transform: rotateX(-90deg) translateZ(calc(50% * var(--s))); }
+
+  .cube-1 .cube { transform: rotateX(-24deg) rotateY(-32deg) rotateZ(-8deg); }
+  .cube-2 .cube { transform: rotateX(-14deg) rotateY( 22deg) rotateZ( 6deg); }
+
+  svg.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+  .tip {
+    position: absolute;
+    bottom: 26px; left: 50%;
+    transform: translateX(-50%);
+    font-family: "Helvetica", "Arial", sans-serif;
+    font-size: 11px; letter-spacing: 1.5px;
+    opacity: 0.55; z-index: 50; user-select: none;
+  }
+
+  @media (max-width: 640px) {
+    .tag-tr { top: 14px; right: 14px; }
+    .tag-tl { top: 10px; left: 14px; }
+    .info-grid { left: 14px; right: 14px; }
+    .names-left { left: 14px; }
+    .names-right { right: 14px; }
+    .bl-l { left: 14px; bottom: 50px; }
+    .bl-r { right: 14px; bottom: 50px; }
+    .bl-r .author { display: none; }
+    .scene.cube-1 { top: 9%; left: 18%; width: 58%; height: 24%; }
+    .scene.cube-2 { top: 58%; left: 30%; width: 52%; height: 28%; }
+  }
+</style>
+</head>
+<body>
+
+<svg class="defs" aria-hidden="true">
+  <defs>
+    <filter id="glassDispersion" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.2" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+      <feOffset in="displaced" dx="-1.2" dy="0" result="roff"/>
+      <feOffset in="displaced" dx=" 1.2" dy="0" result="boff"/>
+      <feColorMatrix in="roff" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0" result="rr"/>
+      <feColorMatrix in="displaced" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 0.9 0" result="gg"/>
+      <feColorMatrix in="boff" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 0.6 0" result="bb"/>
+      <feBlend in="rr" in2="gg" mode="screen" result="rg"/>
+      <feBlend in="rg" in2="bb" mode="screen" result="chroma"/>
+      <feMerge>
+        <feMergeNode in="displaced"/>
+        <feMergeNode in="chroma"/>
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
+
+<div class="poster">
+  <div class="bg-circle c1"></div>
+  <div class="bg-circle c2"></div>
+  <div class="bg-circle c3"></div>
+
+  <div class="tag-tl">
+    HOLY KINGDOM OF FAERGHUS<br>
+    <span class="sub">GLASS TYPE STUDY · WEBGL</span>
+  </div>
+
+  <div class="tag-tr">
+    <div class="titles">
+      <div class="t1">FAERGHUS</div>
+      <div class="t2">FIRE EMBLEM</div>
+      <div class="t3">THREE HOUSES</div>
+      <div class="t4">ファーガス神聖王国</div>
+    </div>
+    <div class="shield" aria-hidden="true"></div>
+  </div>
+
+  <div class="title holy">Holy</div>
+  <div class="title kingdom">Kingdom</div>
+  <div class="title faerghus">Faerghus</div>
+  <div class="title blue">Blue</div>
+  <div class="title lions">Lions</div>
+
+  <div class="info-grid">
+    <div class="left">
+      <div class="label">Location</div>
+      <div class="value">Garreg Mach<br>Monastery</div>
+    </div>
+    <div class="center">
+      <div class="label">Academy</div>
+      <div class="value">Blue Lions<br>In 1180</div>
+    </div>
+    <div class="right">
+      <div class="label">Region</div>
+      <div class="value">Continent<br>Of Fódlan</div>
+    </div>
+  </div>
+
+  <div class="names-left">
+    DIMITRI<br>BYLETH<br>ANNETTE<br>MERCEDES<br>DEDUE
+  </div>
+  <div class="names-right">
+    FELIX<br>ASHE<br>SYLVAIN<br>INGRID
+  </div>
+
+  <div class="scene cube-1" data-cube="1">
+    <div class="cube">
+      <div class="face front"></div>
+      <div class="face back"></div>
+      <div class="face left"></div>
+      <div class="face right"></div>
+      <div class="face top"></div>
+      <div class="face bottom"></div>
+    </div>
+  </div>
+
+  <div class="scene cube-2" data-cube="2">
+    <div class="cube">
+      <div class="face front"></div>
+      <div class="face back"></div>
+      <div class="face left"></div>
+      <div class="face right"></div>
+      <div class="face top"></div>
+      <div class="face bottom"></div>
+    </div>
+  </div>
+
+  <div class="ox-tag">也就是 OX Alpha 模型</div>
+  <div class="bl-r"><div class="author">YAAN.DESIGN</div></div>
+
+  <div class="bl-l">
+    <div class="y">2020</div>
+    <div class="jp">ガルグ＝マク<br>大修院<br>ディミトリ</div>
+    <div class="hint">拖动玻璃立方体旋转 · 移开鼠标自动继续旋转</div>
+  </div>
+
+  <div class="bl-r">
+    <div class="date">7.13 — 8.22</div>
+    <div class="sign">AFTER A POSTER BY YAAN.DESIGN</div>
+  </div>
+
+  <div class="tip">🖱️ 拖动两个玻璃方块可手动旋转 · 松开后继续自动旋转</div>
+</div>
+
+<script>
+  (function () {
+    const scenes = document.querySelectorAll('.scene');
+    scenes.forEach(scene => {
+      const cube = scene.querySelector('.cube');
+      let rotX, rotY, rotZ;
+      if (scene.dataset.cube === '1') {
+        rotX = -24; rotY = -32; rotZ = -8;
+      } else {
+        rotX = -14; rotY =  22; rotZ =  6;
+      }
+      const autoSpeedX = scene.dataset.cube === '1' ? 0.18 : -0.12;
+      const autoSpeedY = scene.dataset.cube === '1' ? 0.28 :  0.22;
+      const autoSpeedZ = scene.dataset.cube === '1' ? 0.05 : -0.04;
+
+      let dragging = false;
+      let lastX = 0, lastY = 0;
+      let velX = 0, velY = 0;
+      let releaseTs = 0;
+
+      function apply() {
+        cube.style.transform = 
+          `rotateX(${rotX.toFixed(2)}deg) ` +
+          `rotateY(${rotY.toFixed(2)}deg) ` +
+          `rotateZ(${rotZ.toFixed(2)}deg)`;
+      }
+      apply();
+
+      function tick() {
+        if (!dragging) {
+          const dt = performance.now() - releaseTs;
+          const t = Math.min(1, dt / 900);
+          const lerp = (a, b) => a + (b - a) * t;
+          rotX += lerp(velX, autoSpeedX);
+          rotY += lerp(velY, autoSpeedY);
+          rotZ += autoSpeedZ;
+          velX *= 0.94;
+          velY *= 0.94;
+        }
+        apply();
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+
+      function pointerDown(e) {
+        dragging = true;
+        scene.setPointerCapture && scene.setPointerCapture(e.pointerId);
+        const p = getPoint(e);
+        lastX = p.x; lastY = p.y;
+        velX = 0; velY = 0;
+      }
+      function pointerMove(e) {
+        if (!dragging) return;
+        const p = getPoint(e);
+        const dx = p.x - lastX;
+        const dy = p.y - lastY;
+        lastX = p.x; lastY = p.y;
+        const factor = 0.45;
+        const dY = dx * factor;
+        const dX = -dy * factor;
+        rotY += dY;
+        rotX += dX;
+        velX = dX * 0.6;
+        velY = dY * 0.6;
+      }
+      function pointerUp(e) {
+        if (!dragging) return;
+        dragging = false;
+        scene.releasePointerCapture && scene.releasePointerCapture(e.pointerId);
+        releaseTs = performance.now();
+      }
+      function getPoint(e) {
+        if (e.touches && e.touches[0]) {
+          return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
+        return { x: e.clientX, y: e.clientY };
+      }
+      scene.addEventListener('pointerdown', pointerDown);
+      scene.addEventListener('pointermove', pointerMove);
+      scene.addEventListener('pointerup',   pointerUp);
+      scene.addEventListener('pointercancel', pointerUp);
+      scene.addEventListener('pointerleave', (e) => { if (dragging) pointerUp(e); });
+    });
+  })();
+</script>
+
+</body>
+</html>
