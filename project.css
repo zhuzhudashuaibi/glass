@@ -249,6 +249,14 @@ body{
     overflow-x: auto;
     overflow-y: auto;
 }
+#t10{
+    width: 80%;
+    height: 10rem;
+    border-radius: 25px;
+    padding: 1rem;
+    overflow-x: auto;
+    overflow-y: auto;
+}
 
 
 /* 文章 */
