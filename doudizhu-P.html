@@ -270,32 +270,22 @@ button{ font-family:inherit; }
 }
 .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
-/* ============ 强制横屏：竖屏时遮罩提示 ============ */
-.rotate-lock{
-  display:none; position:fixed; inset:0; z-index:999;
-  background:var(--pure-bg);
-  flex-direction:column; align-items:center; justify-content:center; gap:20px;
-  text-align:center;
+/* ============ 竖屏强制横屏渲染 ============ */
+@media (orientation:portrait) and (max-width:768px){
+  html,body{ overflow:visible; }
+  body{
+    width:100vh; height:100vw;
+    transform:rotate(90deg) translateX(0);
+    transform-origin:50vw 50vw;
+    position:absolute; left:0; top:0;
+    margin:0;
+  }
+  #stage, .toast, .overlay{
+    width:100vh; height:100vw;
+  }
 }
-.rotate-lock .r-icon{
-  width:80px; height:80px; border-radius:28px; border:3px solid var(--pure-ink);
-  display:flex; align-items:center; justify-content:center;
-  animation:rotateHint 1.8s ease-in-out infinite;
-}
-.rotate-lock .r-icon svg{ width:44px; height:44px; fill:none; stroke:var(--pure-ink); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
-.rotate-lock h2{ font-family:var(--font-display); font-size:28px; font-weight:500; }
-.rotate-lock p{ font-size:14px; color:var(--pure-ink-soft); margin-top:4px; }
-@keyframes rotateHint{
-  0%,100%{ transform:rotate(0deg); }
-  50%{ transform:rotate(90deg); }
-}
-@media (orientation:portrait) and (max-height:600px){
-  .rotate-lock{ display:flex; }
-  #stage, .toast, .overlay{ display:none !important; }
-}
-/* 横屏时旋转锁隐藏 */
 @media (orientation:landscape){
-  .rotate-lock{ display:none !important; }
+  body{ transform:none; transform-origin:unset; position:static; width:auto; height:auto; }
 }
 
 /* ============ 横屏移动端适配 ============ */
@@ -388,14 +378,6 @@ button{ font-family:inherit; }
 </div>
 
 <div class="toast glass" id="toast"></div>
-
-<div class="rotate-lock">
-  <div class="r-icon">
-    <svg viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-  </div>
-  <h2>横屏<em>体验</em></h2>
-  <p>请将手机旋转至横屏模式</p>
-</div>
 
 <div class="overlay" id="startOverlay">
   <div class="panel glass-pure">
