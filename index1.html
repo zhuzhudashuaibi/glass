@@ -44,8 +44,8 @@
     <div id="text" >
         <div class="glass" id="t1">
                 <h2>8月热点</h2>
-                <p>夏日炎炎 各地迎来高温</p>
-                <p>祝大家清凉一夏 万事顺遂</p>
+                <p>作者很懒</p>
+                <p>没啥可说</p>
                 <p>给大家扇扇风[doge]</p>
                 <div class="fan-wrapper">
                 <div class="fan-blades">
@@ -61,10 +61,11 @@
     <div id="text">
         <div class="glass" id="t5">
             <h2>网站日志</h2>
-            <p>更新shunliz彩蛋</p>
-            <p>更新矩阵乘法计算器</p>
+            <p>重磅更新 斗地主小游戏</p>
+            <p>点击顶部小球选择中间开源页</p>
+            <p></p>
             <p>修复邵俊恒手机之墓日期算错问题</p>
-            <p>截至8月12号</p>
+            <p>截至8月27号</p>
         </div>
 
     </div>
@@ -727,39 +728,113 @@ document.getElementById('calcBtn').addEventListener('click', function(){
 
 
     <h2 style="text-align: center;">彩蛋！</h2>
-    <div id="text" >
-        <div class="glass" id="t2">
-                <h2>To shunliz</h2>
-                <p></p>
-                <p>我们相识在2024.9</p>
-                <p id="turtletime">    
-                    <script>
-                        var date1 = new Date('2023-01-01 00:00:00');
-                        var date2 = new Date();
-                        var diffTime = (date2 - date1) / 1000;
 
-                        var days = Math.floor(diffTime / 86400);
-                        var years = Math.floor(days / 365);
-
-                        var hours = Math.floor((diffTime % 86400) / 3600); 
-                        var minutes = Math.floor((diffTime % 3600) / 60); 
-                        var seconds = Math.floor(diffTime % 60); 
-                        document.getElementById("turtletime").innerHTML = "我们已经相识" + years +"年" + days + "天" + hours + "小时" + minutes + "分" + seconds + "秒";
-                    </script>
-                </p>
-                <p>我真的害怕</p>
-                <p>我怕你走又怕你未至</p>
-                <p style="padding-top: 400px;">给你1000部苹果手机<ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon><ion-icon name="phone-portrait-outline"></ion-icon></p>
-                <p>听你的 慢慢来</p>
+    <!-- 密码锁 -->
+    <div id="text">
+        <div class="glass" id="lockBox" style="width:80%;border-radius:40px;padding:30px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;">
+            <ion-icon name="lock-closed-outline" style="font-size:3rem;color:#898989;"></ion-icon>
+            <h2 style="margin:0;">需要密码</h2>
+            <p style="color:#898989;">输入密码查看彩蛋内容</p>
+            <input type="password" id="eggPwd" placeholder="请输入密码"
+                style="width:70%;height:44px;border-radius:999px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.5);text-align:center;font-size:16px;outline:none;font-family:'致一宋體';" />
+            <button id="eggBtn"
+                style="width:70%;height:44px;border-radius:999px;border:none;background:rgba(99,102,241,0.8);color:#fff;font-size:16px;cursor:pointer;font-family:'致一宋體';transition:all 0.3s cubic-bezier(0.68,-0.75,0.265,1.55);">解锁</button>
+            <p id="eggHint" style="color:#f43f5e;font-size:14px;margin:0;min-height:20px;"></p>
         </div>
     </div>
-    <div id="ppp">
-        <p>这是我第一个实战网站</p>
-                <p>有很多地方做的不好</p>
-                <p>真的谢谢你们能看到这里</p>
-                <p>祝你天天开心</p>
-                <p>awa</p>
+
+    <!-- 彩蛋内容（默认隐藏） -->
+    <div id="eggContent" style="display:none;">
+    <div id="text" >
+        <div class="glass" id="t2" style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
+                <h2>hello ovo</h2>
+                <p>宝宝宝宝宝宝宝宝ovo</p>
+                <p>当你看到这条的时候</p>
+                <p>说明</p>
+                
+        </div>
     </div>
+    
+
+    <style>
+    @keyframes shake {
+        0%,100% { transform: translateX(0); }
+        20% { transform: translateX(-8px); }
+        40% { transform: translateX(8px); }
+        60% { transform: translateX(-6px); }
+        80% { transform: translateX(6px); }
+    }
+    .shake { animation: shake 0.4s cubic-bezier(0.36,0.07,0.19,0.97); }
+    #eggBtn:active { transform: scale(0.95); }
+    #eggBtn:disabled { opacity:0.6; }
+    </style>
+
+    <script>
+    (function(){
+        // 密码：改这里就行（当前是 shunliz）
+        var PWD = ['s','h','u','n','l','i','z'].join('');
+        var lockBox = document.getElementById('lockBox');
+        var eggContent = document.getElementById('eggContent');
+        var pwdInput = document.getElementById('eggPwd');
+        var btn = document.getElementById('eggBtn');
+        var hint = document.getElementById('eggHint');
+
+        function startTimer() {
+            var date1 = new Date('2023-01-01 00:00:00');
+            function update() {
+                var date2 = new Date();
+                var diffTime = (date2 - date1) / 1000;
+                var days = Math.floor(diffTime / 86400);
+                var years = Math.floor(days / 365);
+                var hours = Math.floor((diffTime % 86400) / 3600);
+                var minutes = Math.floor((diffTime % 3600) / 60);
+                var seconds = Math.floor(diffTime % 60);
+                var el = document.getElementById("turtletime");
+                if (el) el.innerHTML = "我们已经相识" + years +"年" + days + "天" + hours + "小时" + minutes + "分" + seconds + "秒";
+            }
+            update();
+            setInterval(update, 1000);
+        }
+
+        function unlock() {
+            lockBox.style.transition = "all 0.5s cubic-bezier(0.68,-0.75,0.265,1.55)";
+            lockBox.style.opacity = "0";
+            lockBox.style.transform = "scale(0.9)";
+            setTimeout(function(){
+                lockBox.style.display = "none";
+                eggContent.style.display = "";
+                eggContent.style.animation = "a 0.8s cubic-bezier(0.68,-0.75,0.265,1.55) forwards";
+                startTimer();
+            }, 500);
+            sessionStorage.setItem('eggUnlocked', '1');
+        }
+
+        if (sessionStorage.getItem('eggUnlocked') === '1') {
+            lockBox.style.display = "none";
+            eggContent.style.display = "";
+            startTimer();
+        }
+
+        btn.onclick = function() {
+            var val = pwdInput.value.trim();
+            if (val === PWD) {
+                hint.textContent = "";
+                btn.disabled = true;
+                btn.textContent = "解锁中...";
+                unlock();
+            } else {
+                lockBox.classList.add('shake');
+                hint.textContent = "密码不对哦，再试试";
+                pwdInput.value = "";
+                setTimeout(function(){ lockBox.classList.remove('shake'); }, 400);
+            }
+        };
+
+        pwdInput.addEventListener('keydown', function(e){
+            if (e.key === 'Enter') btn.click();
+        });
+    })();
+    </script>
     <div id="foot"></div>
 </body>
 </html>
