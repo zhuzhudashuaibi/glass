@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>斗地主</title>
+<title>斗地主 · MyGlass Pure White</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet"/>
@@ -139,8 +139,7 @@ button{ font-family:inherit; }
 
 /* ============ 牌 ============ */
 .card{
-  width:var(--card-w); height:var(--card-h); 
-  border-radius: 10px;
+  width:var(--card-w); height:var(--card-h); border-radius:var(--card-r);
   position:relative; flex:0 0 auto;
   background:linear-gradient(160deg, rgba(255,255,255,.95), rgba(255,255,255,.68));
   border:1px solid rgba(20,25,32,.09);
@@ -336,6 +335,60 @@ button{ font-family:inherit; }
   .panel .rsub{ font-size:13px; }
   .panel .row{ margin-top:22px; }
 }
+
+/* ============ 特效动画 ============ */
+.fx-shake{
+  animation:shake .4s cubic-bezier(.22,1,.36,1);
+}
+@keyframes shake{
+  0%,100%{ transform:translateX(0); }
+  10%{ transform:translateX(-8px) rotate(-.5deg); }
+  20%{ transform:translateX(8px) rotate(.5deg); }
+  30%{ transform:translateX(-6px) rotate(-.3deg); }
+  45%{ transform:translateX(6px) rotate(.3deg); }
+  60%{ transform:translateX(-3px); }
+  80%{ transform:translateX(3px); }
+}
+.fx-burst{
+  position:fixed; inset:0; z-index:40; pointer-events:none;
+}
+.fx-dot{
+  position:absolute; top:50%; left:50%;
+  width:10px; height:10px; border-radius:50%;
+  margin:-5px 0 0 -5px;
+  background:var(--c);
+  --tx:calc(cos(var(--a))*var(--r));
+  --ty:calc(sin(var(--a))*var(--r));
+  animation:fxDOT .9s var(--d) cubic-bezier(.2,.8,.3,1) forwards;
+  opacity:0;
+}
+@keyframes fxDOT{
+  0%{ opacity:1; transform:translate(0,0) scale(1); }
+  100%{ opacity:0; transform:translate(var(--tx),var(--ty)) scale(0); }
+}
+.fx-flash{
+  position:fixed; inset:0; z-index:41; pointer-events:none;
+  background:radial-gradient(circle at 50% 50%, rgba(255,255,255,.85) 0%, rgba(255,255,255,.4) 40%, transparent 70%);
+  animation:fxFlash .8s ease-out forwards;
+}
+@keyframes fxFlash{
+  0%{ opacity:0; transform:scale(.3); }
+  30%{ opacity:1; transform:scale(1.1); }
+  100%{ opacity:0; transform:scale(1.4); }
+}
+.fx-ring{
+  position:fixed; inset:0; z-index:39; pointer-events:none;
+  display:flex; align-items:center; justify-content:center;
+}
+.fx-ring::before{
+  content:''; display:block; width:80px; height:80px; border-radius:50%;
+  border:4px solid rgba(200,60,60,0.6);
+  animation:fxRing .6s ease-out forwards;
+}
+@keyframes fxRing{
+  0%{ transform:scale(0.5); opacity:1; }
+  100%{ transform:scale(4); opacity:0; }
+}
 </style>
 </head>
 <body>
@@ -383,9 +436,9 @@ button{ font-family:inherit; }
 
 <div class="overlay" id="startOverlay">
   <div class="panel glass-pure">
-    <div class="eyebrow">Two Beat One</div>
+    <div class="eyebrow">MyGlass · Pure White</div>
     <h1>斗<em>地主</em></h1>
-    <div class="sub">人机对战</div>
+    <div class="sub">T VS O</div>
     <div class="seg" id="segDiff">
       <button data-d="easy">简单</button>
       <button data-d="hard" class="on">困难</button>
@@ -460,6 +513,23 @@ function parseGroup(cards){
   const uniqW=[...new Set(cards.map(weight))].sort((a,b)=>a-b);
   const allW=cards.map(weight).sort((a,b)=>a-b);
 
+  /* 特牌：A+K < K+6 < A+4 < 9+8+K < Q+3+3，压制一切原牌型 */
+  if(n===2 && entries.length===2){
+    const ws=allW;
+    if(ws.includes(RANK_W['A'])&&ws.includes(RANK_W['K'])) return {type:'special',main:100,sp:'ak'};
+    if(ws.includes(RANK_W['K'])&&ws.includes(RANK_W['6'])) return {type:'special',main:101,sp:'k6'};
+    if(ws.includes(RANK_W['A'])&&ws.includes(RANK_W['4'])) return {type:'special',main:102,sp:'a4'};
+  }
+  if(n===3 && entries.length===2){
+    const ws=allW;
+    // Q+3+3：一张Q+一对3
+    if(ws.includes(RANK_W['Q'])&&ws.includes(RANK_W['3'])&&cnt['3']===2) return {type:'special',main:104,sp:'q_33'};
+  }
+  if(n===3 && entries.length===3){
+    const ws=allW;
+    if(ws.includes(RANK_W['9'])&&ws.includes(RANK_W['8'])&&ws.includes(RANK_W['K'])) return {type:'special',main:103,sp:'98k'};
+  }
+
   if(n===2 && cnt.BJ && cnt.RJ) return {type:'rocket',main:99,len:1};
   if(n===1) return {type:'single',main:allW[0],len:1};
   if(n===2 && entries.length===1) return {type:'pair',main:entries[0].w,len:1};
@@ -499,6 +569,8 @@ function parseGroup(cards){
 
 function canBeat(p,last){
   if(!last) return true;
+  if(p.type==='special') return last.type==='special' ? p.main>last.main : true;
+  if(last.type==='special') return false;
   if(p.type==='rocket') return true;
   if(last.type==='rocket') return false;
   if(p.type==='bomb') return last.type==='bomb' ? p.main>last.main : true;
@@ -557,6 +629,20 @@ function findPlays(hand,last){
       const prs=collectPairs(rem,2);
       if(prs) push([...pick(r,4),...prs],'four22',RANK_W[r],1);
     });
+    /* 特牌（先手） */
+    const byW={}; hand.forEach(c=>{byW[weight(c)]=byW[weight(c)]||[]; byW[weight(c)].push(c);});
+    const pickW=(w,k)=>byW[w]?byW[w].slice(0,k):[];
+    if(pickW(RANK_W['A'],1).length&&pickW(RANK_W['K'],1).length)
+      push([...pickW(RANK_W['A'],1),...pickW(RANK_W['K'],1)],'special',100,1);
+    if(pickW(RANK_W['K'],1).length&&pickW(RANK_W['6'],1).length)
+      push([...pickW(RANK_W['K'],1),...pickW(RANK_W['6'],1)],'special',101,1);
+    if(pickW(RANK_W['A'],1).length&&pickW(RANK_W['4'],1).length)
+      push([...pickW(RANK_W['A'],1),...pickW(RANK_W['4'],1)],'special',102,1);
+    if(pickW(RANK_W['9'],1).length&&pickW(RANK_W['8'],1).length&&pickW(RANK_W['K'],1).length)
+      push([...pickW(RANK_W['9'],1),...pickW(RANK_W['8'],1),...pickW(RANK_W['K'],1)],'special',103,1);
+    if(cnt['3']>=2&&pickW(RANK_W['Q'],1).length)
+      push([...pickW(RANK_W['Q'],1),...pickW(RANK_W['3'],2)],'special',104,1);
+
     if(cnt.BJ&&cnt.RJ) push([...pick('BJ',1),...pick('RJ',1)],'rocket',99,1);
     return res;
   }
@@ -608,6 +694,29 @@ function findPlays(hand,last){
   if(t==='bomb') ranksAsc.filter(r=>cnt[r]===4&&RANK_W[r]>last.main).forEach(r=>push(pick(r,4),'bomb',RANK_W[r],1));
   else ranksAsc.filter(r=>cnt[r]===4).forEach(r=>push(pick(r,4),'bomb',RANK_W[r],1));
   if(cnt.BJ&&cnt.RJ) push([...pick('BJ',1),...pick('RJ',1)],'rocket',99,1);
+  /* 特牌（跟牌）：任何时候都能出，且压制一切 */
+  const byW={}; hand.forEach(c=>{byW[weight(c)]=byW[weight(c)]||[]; byW[weight(c)].push(c);});
+  const pickW=(w,k)=>byW[w]?byW[w].slice(0,k):[];
+  if(last.type!=='special'||last.main<100){
+    if(pickW(RANK_W['A'],1).length&&pickW(RANK_W['K'],1).length)
+      push([...pickW(RANK_W['A'],1),...pickW(RANK_W['K'],1)],'special',100,1);
+  }
+  if(last.type!=='special'||last.main<101){
+    if(pickW(RANK_W['K'],1).length&&pickW(RANK_W['6'],1).length)
+      push([...pickW(RANK_W['K'],1),...pickW(RANK_W['6'],1)],'special',101,1);
+  }
+  if(last.type!=='special'||last.main<102){
+    if(pickW(RANK_W['A'],1).length&&pickW(RANK_W['4'],1).length)
+      push([...pickW(RANK_W['A'],1),...pickW(RANK_W['4'],1)],'special',102,1);
+  }
+  if(last.type!=='special'||last.main<103){
+    if(pickW(RANK_W['9'],1).length&&pickW(RANK_W['8'],1).length&&pickW(RANK_W['K'],1).length)
+      push([...pickW(RANK_W['9'],1),...pickW(RANK_W['8'],1),...pickW(RANK_W['K'],1)],'special',103,1);
+  }
+  if(last.type!=='special'||last.main<104){
+    if(cnt['3']>=2&&pickW(RANK_W['Q'],1).length)
+      push([...pickW(RANK_W['Q'],1),...pickW(RANK_W['3'],2)],'special',104,1);
+  }
   return res;
 }
 
@@ -657,8 +766,8 @@ function aiChoose(seat){
   // 农民不要压队友
   if(!isLead && !isL && lastSeat===partnerSeat) return null;
 
-  const normal=cands.filter(c=>c.parsed.type!=='bomb'&&c.parsed.type!=='rocket');
-  const bombs=cands.filter(c=>c.parsed.type==='bomb'||c.parsed.type==='rocket');
+  const normal=cands.filter(c=>c.parsed.type!=='bomb'&&c.parsed.type!=='rocket'&&c.parsed.type!=='special');
+  const bombs=cands.filter(c=>c.parsed.type==='bomb'||c.parsed.type==='rocket'||c.parsed.type==='special');
 
   // 判断对手危险度
   const oppSeat=isL
@@ -678,7 +787,7 @@ function aiChoose(seat){
 
   let pool=normal.length?normal:cands;
 
-  // 跟牌时没普通牌可压 → 只有炸弹，但非危急就pass
+  // 跟牌时没普通牌可压 → 只有炸弹/特牌，但非危急就pass
   if(!isLead && pool===cands && !oppDanger) return null;
 
   const cntAll=countMap(hand);
@@ -698,6 +807,7 @@ function aiChoose(seat){
       plane:22,'plane1':18,'plane2':16,
       pairseq:14, straight:12,
       four22:8, four2:6,
+      special:30,
       triple2:5, triple1:3, triple:2, pair:1, single:0
     };
     s += (typeBonus[p.type]||0);
@@ -794,13 +904,159 @@ function doPlay(seat,cards){
   slots[seat]=cards.slice().sort((a,b)=>weight(b)-weight(a));
   selected.clear();
   renderAll();
+  /* 音效 + 特效 */
+  if(parsed.type==='special'){ sfx('special'); triggerEffect('special',parsed.sp); }
+  else if(parsed.type==='rocket'){ sfx('bomb'); triggerEffect('rocket'); }
+  else if(parsed.type==='bomb'){ sfx('bomb'); triggerEffect('bomb'); }
+  else if(parsed.type==='single'&&cards[0].rank==='2'){ sfx('play'); triggerEffect('_2'); }
+  else if(parsed.type==='pair'&&cards[0].rank==='2'){ sfx('play'); triggerEffect('pair2'); }
+  else sfx('play');
   if(hands[seat].length===0){ endGame(seat); return; }
   advance();
+}
+
+/* ================= 音效（Web Audio 合成，零依赖） ================= */
+let audioCtx=null;
+function getCtx(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
+function sfx(type){
+  try{
+    const ctx=getCtx(); if(ctx.state==='suspended') ctx.resume();
+    const now=ctx.currentTime;
+    if(type==='tap'){
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(1800,now); o.frequency.exponentialRampToValueAtTime(1200,now+0.06);
+      g.gain.setValueAtTime(0.15,now); g.gain.exponentialRampToValueAtTime(0.001,now+0.06);
+      o.connect(g); g.connect(ctx.destination); o.start(now); o.stop(now+0.07);
+    }
+    if(type==='play'){
+      const b=ctx.createBufferSource(), g=ctx.createGain();
+      const buf=ctx.createBuffer(1,ctx.sampleRate*0.12,ctx.sampleRate);
+      const d=buf.getChannelData(0);
+      for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/ctx.sampleRate*60);
+      b.buffer=buf; g.gain.setValueAtTime(0.12,now); g.gain.exponentialRampToValueAtTime(0.001,now+0.12);
+      const f=ctx.createBiquadFilter(); f.type='bandpass'; f.frequency.setValueAtTime(800,now); f.Q.setValueAtTime(1.5,now);
+      b.connect(f); f.connect(g); g.connect(ctx.destination); b.start(now); b.stop(now+0.13);
+    }
+    if(type==='bomb'){
+      [0,0.08,0.16].forEach(del=>{
+        const b=ctx.createBufferSource(), g=ctx.createGain();
+        const buf=ctx.createBuffer(1,ctx.sampleRate*0.4,ctx.sampleRate);
+        const d=buf.getChannelData(0);
+        for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/ctx.sampleRate*10);
+        b.buffer=buf; g.gain.setValueAtTime(0.2,now+del); g.gain.exponentialRampToValueAtTime(0.001,now+del+0.4);
+        const f=ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.setValueAtTime(300,now+del); f.frequency.exponentialRampToValueAtTime(60,now+del+0.3);
+        b.connect(f); f.connect(g); g.connect(ctx.destination); b.start(now+del); b.stop(now+del+0.45);
+      });
+      const o=ctx.createOscillator(), g2=ctx.createGain();
+      o.type='sawtooth'; o.frequency.setValueAtTime(80,now); o.frequency.exponentialRampToValueAtTime(30,now+0.3);
+      g2.gain.setValueAtTime(0.15,now); g2.gain.exponentialRampToValueAtTime(0.001,now+0.35);
+      o.connect(g2); g2.connect(ctx.destination); o.start(now); o.stop(now+0.36);
+    }
+    if(type==='special'){
+      [0,0.05,0.1,0.15].forEach(del=>{
+        const b=ctx.createBufferSource(), g=ctx.createGain();
+        const buf=ctx.createBuffer(1,ctx.sampleRate*0.5,ctx.sampleRate);
+        const d=buf.getChannelData(0);
+        for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/ctx.sampleRate*8);
+        b.buffer=buf; g.gain.setValueAtTime(0.25,now+del); g.gain.exponentialRampToValueAtTime(0.001,now+del+0.5);
+        const f=ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.setValueAtTime(500,now+del); f.frequency.exponentialRampToValueAtTime(40,now+del+0.4);
+        b.connect(f); f.connect(g); g.connect(ctx.destination); b.start(now+del); b.stop(now+del+0.55);
+      });
+      [0,0.12].forEach(del=>{
+        const o=ctx.createOscillator(), g2=ctx.createGain();
+        o.type='square'; o.frequency.setValueAtTime(120,now+del); o.frequency.exponentialRampToValueAtTime(20,now+del+0.4);
+        g2.gain.setValueAtTime(0.12,now+del); g2.gain.exponentialRampToValueAtTime(0.001,now+del+0.45);
+        o.connect(g2); g2.connect(ctx.destination); o.start(now+del); o.stop(now+del+0.46);
+      });
+    }
+    if(type==='pass'){
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(500,now); o.frequency.exponentialRampToValueAtTime(300,now+0.1);
+      g.gain.setValueAtTime(0.08,now); g.gain.exponentialRampToValueAtTime(0.001,now+0.12);
+      o.connect(g); g.connect(ctx.destination); o.start(now); o.stop(now+0.13);
+    }
+    if(type==='win'){
+      [0,0.15,0.3,0.45,0.6].forEach((del,i)=>{
+        const o=ctx.createOscillator(), g=ctx.createGain();
+        o.type='sine'; o.frequency.setValueAtTime([523,659,784,1047,1319][i],now+del);
+        g.gain.setValueAtTime(0.12,now+del); g.gain.exponentialRampToValueAtTime(0.001,now+del+0.25);
+        o.connect(g); g.connect(ctx.destination); o.start(now+del); o.stop(now+del+0.26);
+      });
+    }
+    if(type==='lose'){
+      [0,0.25,0.45].forEach((del,i)=>{
+        const o=ctx.createOscillator(), g=ctx.createGain();
+        o.type='sawtooth'; o.frequency.setValueAtTime([400,300,200][i],now+del);
+        g.gain.setValueAtTime(0.08,now+del); g.gain.exponentialRampToValueAtTime(0.001,now+del+0.3);
+        o.connect(g); g.connect(ctx.destination); o.start(now+del); o.stop(now+del+0.31);
+      });
+    }
+    if(type==='notify'){
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(1000,now); o.frequency.setValueAtTime(1200,now+0.08); o.frequency.setValueAtTime(1000,now+0.16);
+      g.gain.setValueAtTime(0.06,now); g.gain.exponentialRampToValueAtTime(0.001,now+0.25);
+      o.connect(g); g.connect(ctx.destination); o.start(now); o.stop(now+0.26);
+    }
+  }catch(e){}
+}
+
+/* ================= 特效 ================= */
+const effectColors={
+  bomb:['#ffe066','#ff884d','#ff5e5e','#fff'],
+  rocket:['#ff5e5e','#ff3388','#cc33ff','#fff'],
+  ak:['#c0d6ff','#8ab4ff','#5588ff','#fff'],
+  k6:['#ffccaa','#ff884d','#ff5500','#fff'],
+  a4:['#66ff88','#33cc66','#009944','#fff'],
+  '98k':['#ff3366','#ff00aa','#cc00ff','#fff'],
+  'q_33':['#ffcc00','#ff8800','#ff4400','#fff'],
+  _2:['#ff9999','#ff4444','#cc0000','#fff'],
+  pair2:['#ff4444','#cc0000','#880000','#fff']
+};
+let effectTimer=null;
+function triggerEffect(type,sp){
+  clearTimeout(effectTimer);
+  const el=$('stage');
+  const colors=effectColors[sp]||effectColors[type]||effectColors.bomb;
+  const isBig=type==='special'||type==='bomb'||type==='rocket'||type==='pair2';
+  // 震动
+  const dur=isBig?500:300;
+  el.classList.add('fx-shake');
+  effectTimer=setTimeout(()=>el.classList.remove('fx-shake'),dur);
+  // 粒子爆发
+  const burst=document.createElement('div');
+  burst.className='fx-burst';
+  const n=isBig?48:24;
+  const r=type==='special'?280:isBig?220:140;
+  for(let i=0;i<n;i++){
+    const dot=document.createElement('div');
+    dot.className='fx-dot';
+    const a=i/n*360;
+    const c=colors[i%colors.length];
+    dot.style.cssText=`--a:${a}deg;--r:${r}px;--c:${c};--d:${i*0.018}s`;
+    burst.appendChild(dot);
+  }
+  el.appendChild(burst);
+  setTimeout(()=>burst.remove(),1200);
+  // 闪光
+  if(type==='special'){
+    const flash=document.createElement('div');
+    flash.className='fx-flash';
+    el.appendChild(flash);
+    setTimeout(()=>flash.remove(),900);
+  }
+  // 2/对2 小半径光环
+  if(type==='_2'||type==='pair2'){
+    const ring=document.createElement('div');
+    ring.className='fx-ring';
+    el.appendChild(ring);
+    setTimeout(()=>ring.remove(),700);
+  }
 }
 
 function doPass(seat){
   passStreak++;
   slots[seat]='pass';
+  sfx('pass');
   if(passStreak>=2){ lastPlay=null; passStreak=0; }
   renderAll();
   advance();
@@ -821,6 +1077,7 @@ function endGame(winner){
   const landlordWin=winner===landlordSeat;
   const humanIsL=humanSeat===landlordSeat;
   const humanWin=(winner===humanSeat)||(!humanIsL&&!landlordWin);
+  sfx(humanWin?'win':'lose');
   statusSet('对局结束');
   $('endRole').textContent=humanIsL?'你是地主':'你是农民';
   $('endTitle').innerHTML=humanWin?'胜<em>利</em>':'惜<em>败</em>';
@@ -834,7 +1091,7 @@ function toggleCard(id){
   const el=$('handEl').querySelector(`.card[data-id="${id}"]`);
   if(!el) return;
   if(selected.has(id)){ selected.delete(id); el.classList.remove('sel'); }
-  else { selected.add(id); el.classList.add('sel'); }
+  else { selected.add(id); el.classList.add('sel'); sfx('tap'); }
 }
 function humanPlay(){
   if(phase!=='playing'||turn!==humanSeat) return;
@@ -855,7 +1112,7 @@ function humanHint(){
   const last=(lastPlay&&lastPlay.seat!==humanSeat)?lastPlay.parsed:null;
   const cands=findPlays(hands[humanSeat],last);
   if(!cands.length){ toast('没有能压过的牌'); return; }
-  const nb=cands.filter(c=>c.parsed.type!=='bomb'&&c.parsed.type!=='rocket');
+  const nb=cands.filter(c=>c.parsed.type!=='bomb'&&c.parsed.type!=='rocket'&&c.parsed.type!=='special');
   const pool=nb.length?nb:cands;
   pool.sort((a,b)=>a.parsed.main-b.parsed.main||a.cards.length-b.cards.length);
   selected.clear();
@@ -947,6 +1204,7 @@ function renderAll(){
 let toastTimer=null;
 function toast(msg){
   const el=$('toast'); el.textContent=msg; el.classList.add('show');
+  sfx('notify');
   clearTimeout(toastTimer);
   toastTimer=setTimeout(()=>el.classList.remove('show'),1800);
 }
