@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>  <meta charset="UTF-8">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="glassMy.css">
-    <link rel="stylesheet" href="project.css">
+    <link rel="stylesheet" href="mine.css">
     <!-- <script type="module" src="ionicons.designerpack"> </script> -->
     <script type="module" src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.js"></script>
@@ -12,6 +13,8 @@
     <noscript><link rel="stylesheet" href="https://fontsapi.zeoseven.com/522/main/result.css" /></noscript>
 </head>
 <body>
+        <!-- <div id="float">
+        \ </div> -->
     <div class="" id="head">
         <div class="glass" id="island">
             <a href="index1.html" class="green" id="head-a" class="glass" style=":hover{background-color:rgba(100, 255, 123, 0.5);}"><ion-icon name="home-outline" id="icon"></ion-icon></a>
@@ -22,117 +25,161 @@
     <!-- 岛写完了 -->
     <div id="text-first">
         <div>
-            <h1>开源的本质</h1>
-            <h2>是信任的传递</h2>
+            <h1>个人介绍</h1>
         </div>
     </div>
+
     <div id="text">
         <div class="glass" id="t1">
-            <a href="https://github.com/zhuzhudashuaibi" class="glass">
-                <ion-icon name="arrow-up-circle-outline"></ion-icon>
-            </a>
-            <h2>我的github(PC)</h2>
-            <p>zhuzhu2012的琐碎项目</p>
-            <p>主要为前端动画样式demo</p>
-            <p>和一些简易python文件</p>
+            <h1 style="text-align: center;">身份证</h1>
+            <p>姓名:qiqi</p>
+            <p>用户名:zhuzhu2012</p>
+            <p>全名:zhuzhudashuaibi</p>
+            <p id="age">
+                <script>
+                        var date1 = new Date('2012-06-01 00:00:00');
+                        var date2 = new Date();
+                        var diffTime = (date2 - date1) / 1000; // 将毫秒转换为秒
 
+                        var days = Math.floor(diffTime / 86400); // 计算天数
+                        var years = Math.floor(days / 365);
+                        var day = days - years * 365
+                        var hours = Math.floor((diffTime % 86400) / 3600); // 计算小时数
+                        var minutes = Math.floor((diffTime % 3600) / 60); // 计算分钟数
+                        var seconds = Math.floor(diffTime % 60); // 计算秒数
+                        document.getElementById("age").innerHTML = "年龄:" + years +"年" + day + "天" + hours + "小时" + minutes + "分" + seconds + "秒";
+                </script>
+            </p>
+            <p>性别:男</p>
+            <p>IP: 太阳系地球亚洲中国辽宁省</p>
         </div>
     </div>
+
     <div id="text">
-        <div class="glass" id="t2">
-            <a href="https://github.com/zhuzhudashuaibi/glass/blob/main/glassMy.css" class="glass">
-                <ion-icon name="arrow-up-circle-outline"></ion-icon>
-            </a>
-            <h2>玻璃源码(PC)</h2>
-            <p>劣质blur玻璃</p>
-            <p>都怪sz微信不优化webgl</p>
-            <p>等什么时候微信优化了我再考虑写threejs</p>
+        <div id="t2" class="glass">
+            <div id="boxWrap" style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
+                <p class="ball">python</p >
+                <p class="ball">前端UI</p >
+                <p class="ball">信竞</p >
+                <p class="ball">CODM</p >
+                <p class="ball">Nexus适能者</p >
+                <p class="ball">寂静岭居民</p >
+                <p class="ball">队长YoungCaptain</p >
+                <p class="ball">GANCUBE</p >
+                <p class="ball">魔王C+</p >
+                <p class="ball">JDM</p >
+                <p class="ball">客制化大佬</p >
+                <p class="ball">短剑省榜</p >
+                <p class="ball">格斗进化重生</p >
+                <p class="ball">请输入文本</p >
+                <p class="ball">G胖信徒</p >
+                <p class="ball">3公里进12分</p >
+                <p class="ball">C++</p >
+                <p class="ball">摄影</p >
+            </div>
+            <script>
+    const wrap = document.getElementById('boxWrap');
+    const pList = document.querySelectorAll('.ball');
+    const colorArr = ['#ff4757','#2ed573','#1e90ff','#ffa502','#a55eea','#00d2d3','#ff6b81'];
+    const dataArr = [];
+
+    pList.forEach(el => {
+        el.style.backgroundColor = colorArr[Math.floor(Math.random() * colorArr.length)];
+        const w = el.offsetWidth;
+        const h = el.offsetHeight;
+        const maxX = wrap.clientWidth - w;
+        const maxY = wrap.clientHeight - h;
+        dataArr.push({
+            dom: el,
+            x: Math.random() * maxX,
+            y: Math.random() * maxY,
+            speedX: (Math.random() > 0.5 ? 1 : -1) * (1 + Math.random() * 0.01),
+            speedY: (Math.random() > 0.5 ? 1 : -1) * (1 +Math.random() * 0.01),
+            width: w,
+            height: h
+        })
+    })
+
+    function bounceLoop() {
+        const wrapW = wrap.clientWidth;
+        const wrapH = wrap.clientHeight;
+        dataArr.forEach(item => {
+            item.x += item.speedX;
+            item.y += item.speedY;
+            if(item.x <= 0 || item.x >= wrapW - item.width) {
+                item.speedX *= -1;
+            }
+            if(item.y <= 0 || item.y >= wrapH - item.height) {
+                item.speedY *= -1;
+            }
+            item.dom.style.left = item.x + 'px';
+            item.dom.style.top = item.y + 'px';
+        })
+        requestAnimationFrame(bounceLoop);
+    }
+    bounceLoop();
+</script>
         </div>
     </div>
+
     <div id="text">
         <div class="glass" id="t3">
-            <a href="https://zhuzhudashuaibi.github.io/ShaoHeng3392/chat5.0" class="glass">
-                <ion-icon name="arrow-up-circle-outline"></ion-icon>
-            </a>
-            <h2>JS生日贺卡</h2>
-            <p>每年的5月</p>
-            <p>是3392的生日</p>
-            <p>这是送给他的生日礼物之一</p>
-        </div>
-    </div>
-    <div id="text">
-        <div class="glass" id="t4">
-            <a href="https://github.com/zhuzhudashuaibi/zhuzhudashuaibi.github.io" class="glass">
-                <ion-icon name="arrow-up-circle-outline"></ion-icon>
-            </a>
-            <h2>AI项目(PC端)</h2>
-            <p>每隔半年 我都会让当时最强的AI自己写一个网站</p>
-            <p>记录AI的成长</p>
-        </div>
-    </div>
-    <div id="text">
-        <div class="glass" id="t5">
-            <a href="https://ionic.io/ionicons/usage" class="glass">
-                <ion-icon name="arrow-up-circle-outline"></ion-icon>
-            </a>
-            <h2>icon图标</h2>
-            <p>back to the 2023</p>
+            <h1>账号</h1>
+            <p>本人已脱离世俗</p>
+            <p>无快手抖音账号</p>
+            <h2>手机号13940725550</h2>
+            <h2>网易云为zhuzhu_2012</h2>
+            <h2>微信号:zhuzhudashuaibi_2012</h2>
+            <h2>QQ:3380491552</h2>
+            <h2>邮箱:13940725550@163.com</h2>
+            <p>如有问题欢迎反馈</p>
+            
             
         </div>
     </div>
+
     <div id="text">
-        <div class="glass" id="t6">
-            <a href="https://ionic.io/ionicons/usage" class="glass">
-                <ion-icon name="arrow-up-circle-outline"></ion-icon>
-            </a>
-            <h2>网易云NCM转MP3</h2>
-            <p>很实用的工具</p>
+        <div class="glass" id="t4">
+            <h1 style="text-align: center;">封神榜</h1>
+            <p>准哥 准2.0 三个水</p>
+            <p>1祖苹3 3392 Drzh Q 卡卡熙小号</p>
+            <p>Y. 程三金 Shunliz</p>
+            <p>洋帆起航 章鱼哥 累了 踢球的兄弟们</p>
+            <p>CODM群的兄弟们</p>
+            <h3>谢谢你们(想上榜可以私信)</h3>
         </div>
     </div>
-    <div id="text">
-        <div class="glass" id="t7">
-            <a href="https://www.jimjcy.top" class="glass">
-                <ion-icon name="arrow-up-circle-outline"></ion-icon>
-            </a>
-            <h2>小井井的网站</h2>
-            <p>有自己域名还有JS</p>
-            <p>膜拜大神</p>
-        </div>
-    </div>
-    <div id="text">
-        <div class="glass" id="t8">
-            <a href="https://neumorphism.io/#e0e0e0" class="glass">
-                <ion-icon name="arrow-up-circle-outline"></ion-icon>
-            </a>
-            <h2>伪3D盒子生成器</h2>
-            <p>现在算不算复古</p>
-        </div>
-    </div>
-    <div id="text">
-        <div class="glass" id="t9">
-            <a href="https://zhuzhudashuaibi.github.io/glass/X.html" class="glass">
-                <ion-icon name="arrow-up-circle-outline"></ion-icon>
-            </a>
-            <h2>艾克斯变身器(移动端)</h2>
-            <p>图片和音效加载会有点慢</p>
-        </div>
-    </div>
-    <div id="text">
-        <div class="glass" id="t10">
-            <a href="https://zhuzhudashuaibi.github.io/glass/doudizhu-P.html" class="glass">
-                <ion-icon name="arrow-up-circle-outline"></ion-icon>
-            </a>
-            <h2>斗地主(手机版)</h2>
-            <p>玩的时候把手机旋转打开横屏玩</p>
-            <p>自己写的我就开挂发好牌改好吧</p>
-        </div>
+    <h1 style="text-align: center; padding-top: 2rem;">特别鸣谢:小井井(大蛇)</h1>
+    <h2 style="text-align: center;">jimjcy.top</h2>
+
+    <div id="fen">
+            <div id="fen1">
+                <p>邵浚恒手机之墓</p>
+                <p id="mu">
+                    <script>
+                        var date1 = new Date('2026-05-16 00:00:00');
+                        var date2 = new Date();
+                        var diffTime = (date2 - date1) / 1000; // 将毫秒转换为秒
+
+                        var days = Math.floor(diffTime / 86400); // 计算天数
+                        var years = Math.floor(days / 365);
+
+                        var hours = Math.floor((diffTime % 86400) / 3600); // 计算小时数
+                        var minutes = Math.floor((diffTime % 3600) / 60); // 计算分钟数
+                        var seconds = Math.floor(diffTime % 60); // 计算秒数
+                        document.getElementById("mu").innerHTML ="已死" + days +"天";
+                    </script>
+
+                </p>
+
+            </div>
+            <div id="fen2"></div>
     </div>
 
+    <h1 style="margin-top: 30%; text-align: center;"></h1>
 
-
-    <!-- 文章 -->
-    <div id="foot"></div>
-
+        <div id="foot"></div>
+    
+    
 </body>
 </html>
-
