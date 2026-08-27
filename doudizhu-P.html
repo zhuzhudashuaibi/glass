@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>斗地主 · MyGlass Pure White</title>
+<title>斗地主</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet"/>
@@ -139,7 +139,8 @@ button{ font-family:inherit; }
 
 /* ============ 牌 ============ */
 .card{
-  width:var(--card-w); height:var(--card-h); border-radius:var(--card-r);
+  width:var(--card-w); height:var(--card-h); 
+  border-radius: 10px;
   position:relative; flex:0 0 auto;
   background:linear-gradient(160deg, rgba(255,255,255,.95), rgba(255,255,255,.68));
   border:1px solid rgba(20,25,32,.09);
@@ -382,9 +383,9 @@ button{ font-family:inherit; }
 
 <div class="overlay" id="startOverlay">
   <div class="panel glass-pure">
-    <div class="eyebrow">MyGlass · Pure White</div>
+    <div class="eyebrow">Two Beat One</div>
     <h1>斗<em>地主</em></h1>
-    <div class="sub">液态玻璃 · 人机对战 · 完整牌型</div>
+    <div class="sub">人机对战</div>
     <div class="seg" id="segDiff">
       <button data-d="easy">简单</button>
       <button data-d="hard" class="on">困难</button>
