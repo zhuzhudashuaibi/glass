@@ -264,9 +264,10 @@ button{ font-family:inherit; }
 
 /* toast */
 .toast{
-  position:fixed; top:74px; left:50%; transform:translateX(-50%) translateY(-8px);
+  position:absolute; top:74px; left:50%; transform:translateX(-50%) translateY(-8px);
   z-index:60; padding:10px 24px; border-radius:999px; font-size:14px;
   opacity:0; pointer-events:none; transition:.3s cubic-bezier(.22,1,.36,1);
+  white-space:nowrap;
 }
 .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
@@ -280,7 +281,7 @@ button{ font-family:inherit; }
     position:absolute; left:0; top:0;
     margin:0;
   }
-  #stage, .toast, .overlay{
+  #stage, .overlay{
     width:100vh; height:100vw;
   }
 }
@@ -375,9 +376,9 @@ button{ font-family:inherit; }
     <button class="btn ghost" id="btnRestart">重开</button>
     <button class="btn ghost" id="btnDiff">难度 · 困难</button>
   </div>
-</div>
 
-<div class="toast glass" id="toast"></div>
+  <div class="toast glass" id="toast"></div>
+</div>
 
 <div class="overlay" id="startOverlay">
   <div class="panel glass-pure">
