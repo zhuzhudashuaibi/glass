@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>手写汉字识别 · 在线手写识别</title>
+<meta name="description" content="在网页上手写汉字，浏览器本地实时识别你写的内容。支持鼠标、触摸与手写笔，数据不出本机。" />
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<main class="app">
+  <header class="hero">
+    <div class="hero-mark" aria-hidden="true">写</div>
+    <div class="hero-text">
+      <h1>手写汉字识别</h1>
+      <p class="hero-sub">在下面的格子里写字，系统会实时识别你写的内容</p>
+    </div>
+  </header>
+
+  <section class="layout">
+    <!-- 书写区 -->
+    <div class="panel board-panel">
+      <div class="toolbar">
+        <span class="status" id="status" data-state="loading">
+          <i class="dot"></i><span id="statusText">正在加载识别模型…</span>
+        </span>
+        <div class="toolbar-gap"></div>
+        <button class="btn ghost" id="btnDemo" type="button">写个示例</button>
+        <button class="btn ghost" id="btnUndo" type="button">撤销</button>
+        <button class="btn ghost" id="btnClear" type="button">清空</button>
+        <button class="btn primary" id="btnRecognize" type="button">识别</button>
+      </div>
+
+      <div class="board" id="board">
+        <canvas id="canvas"></canvas>
+        <div class="board-hint" id="boardHint">
+          <span>在这里写字</span>
+          <svg width="40" height="14" viewBox="0 0 40 14" aria-hidden="true">
+            <path d="M2 7h30M26 2l6 5-6 5" fill="none" stroke="currentColor" stroke-width="1.6"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="overlay" id="overlay">
+          <div class="spinner"></div>
+          <p id="overlayText">加载识别模型…</p>
+          <button class="btn ghost" id="btnRetry" type="button" hidden>重新加载</button>
+        </div>
+      </div>
+
+      <p class="tip">
+        一个字一个字地写，字与字之间留一点空隙，识别会更准。
+        支持鼠标、触屏和手写笔（<kbd>Ctrl</kbd>+<kbd>Z</kbd> 撤销）。
+      </p>
+    </div>
+
+    <!-- 结果区 -->
+    <div class="panel result-panel">
+      <div class="result-head">
+        <h2>识别结果</h2>
+        <span class="meta" id="resultMeta"></span>
+      </div>
+
+      <div class="result-text" id="resultText">
+        <span class="placeholder">写几个字试试，结果会显示在这里</span>
+      </div>
+
+      <div class="result-actions">
+        <button class="btn ghost" id="btnCopy" type="button" disabled>复制结果</button>
+        <span class="hint-inline" id="correctHint" hidden>点选下面的候选字可以纠正结果</span>
+      </div>
+
+      <div class="candidates" id="candidates"></div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    识别引擎基于 <a href="https://github.com/gugray/HanziLookupJS" target="_blank" rel="noreferrer">HanziLookupJS</a>，
+    字形数据源自 Make Me a Hanzi（Arphic Public License）。全部计算都在你的浏览器本地完成，手写内容不会上传。
+  </footer>
+</main>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
