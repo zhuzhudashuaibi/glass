@@ -19,7 +19,6 @@ const MAX_CANDIDATES = 8;      // 每个字返回的候选数
 const IDLE_DELAY = 650;        // 停笔多久后自动识别
 const BASE_WIDTH = 3.4;        // 基础笔画宽度（px）
 const INK_COLOR = '#1b1a18';
-const RESAMPLE_STEP = 4.5;     // 示例笔画采样间距
 
 /* ---------- DOM ---------- */
 const els = {
@@ -281,6 +280,8 @@ function segmentStrokes(strokes) {
       clusters.push(current);
     }
   }
+  // 簇内必须保持书写顺序：识别引擎按笔顺对齐，打乱顺序会显著降低准确率
+  for (const c of clusters) c.strokeIdx.sort((a, b) => a - b);
   return clusters.sort((a, b) => a.left - b.left);
 }
 
@@ -488,21 +489,37 @@ async function fetchText(url, onProgress) {
   return new TextDecoder().decode(buffer);
 }
 
+/** 把 JSON 文本装载成可用的识别引擎 */
+function installModel(text) {
+  const parsed = JSON.parse(text);
+  parsed.substrokes = decodeCompact(parsed.substrokes);
+  data['mmah'] = parsed;
+  matcher = new Matcher('mmah');
+  STATE.ready = true;
+  setOverlay(false);
+  setStatus('ready', '就绪 · 可以开始写字了');
+  return true;
+}
+
 async function loadModel() {
   setStatus('loading', '正在加载识别模型…');
   setOverlay(true, '加载识别模型…');
 
+  // 单文件版本：字符数据直接内嵌在页面中，无需任何网络请求
+  const bundled = document.getElementById('mmahData');
+  if (bundled && bundled.textContent.trim().length > 8) {
+    try {
+      installModel(bundled.textContent);
+      return;
+    } catch (err) {
+      console.warn('[手写识别] 内嵌数据解析失败：', err);
+    }
+  }
+
   for (const url of DATA_SOURCES) {
     try {
       const text = await fetchText(url, (pct) => setOverlay(true, `加载识别模型 ${pct}%`));
-      const parsed = JSON.parse(text);
-      parsed.substrokes = decodeCompact(parsed.substrokes);
-      data['mmah'] = parsed;
-      matcher = new Matcher('mmah');
-      STATE.ready = true;
-      setOverlay(false);
-      setStatus('ready', '就绪 · 可以开始写字了');
-      els.board.style.cursor = 'crosshair';
+      installModel(text);
       return;
     } catch (err) {
       console.warn('[手写识别] 模型数据加载失败：', url, err);
@@ -528,29 +545,20 @@ function bbox(points) {
   return { x0, y0, x1, y1, w: x1 - x0, h: y1 - y0, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 };
 }
 
-function resample(points, step) {
-  const out = [points[0]];
-  for (let i = 1; i < points.length; i++) {
-    const [ax, ay] = points[i - 1];
-    const [bx, by] = points[i];
-    const dist = Math.hypot(bx - ax, by - ay);
-    const n = Math.max(1, Math.round(dist / step));
-    for (let k = 1; k <= n; k++) {
-      out.push([ax + ((bx - ax) * k) / n, ay + ((by - ay) * k) / n]);
-    }
-  }
-  return out;
-}
-
 /** 用参考字形数据生成一段"手写"笔迹，并与真实书写走同一套识别流程 */
 async function drawSample(text = '你好世界') {
   if (!STATE.ready) return false;
   if (!samples) {
-    try {
-      samples = await (await fetch(SAMPLES_URL)).json();
-    } catch (err) {
-      console.warn('[手写识别] 示例数据加载失败：', err);
-      samples = {};
+    const bundled = document.getElementById('samplesData');
+    if (bundled && bundled.textContent.trim().length > 8) {
+      try { samples = JSON.parse(bundled.textContent); } catch { samples = {}; }
+    } else {
+      try {
+        samples = await (await fetch(SAMPLES_URL)).json();
+      } catch (err) {
+        console.warn('[手写识别] 示例数据加载失败：', err);
+        samples = {};
+      }
     }
   }
 
@@ -571,9 +579,9 @@ async function drawSample(text = '你好世界') {
     const cx = startX + i * cell + cell / 2;
     const cy = topY + cell / 2;
     for (const median of medians) {
+      // 直接使用参考字形的原始折线顶点：引擎在这类"拐点采样"下判别最准
       const mapped = median.map(([x, y]) => [(x - b.cx) * scale + cx, -(y - b.cy) * scale + cy]);
-      const pts = resample(mapped, RESAMPLE_STEP).map(([x, y]) => ({ x, y, w: BASE_WIDTH * 0.95 }));
-      strokes.push({ points: pts });
+      strokes.push({ points: mapped.map(([x, y]) => ({ x, y, w: BASE_WIDTH * 0.95 })) });
     }
   });
 
