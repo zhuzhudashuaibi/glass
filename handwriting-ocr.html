@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>手写识别 · 图片OCR版</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='5' fill='%231b1b1f'/><path d='M6 17c4-6 5-9 6-11 1 2 2 5 6 11' stroke='%23e8733f' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+  :root{
+    --paper:#f6efe0; --paper-2:#efe6d1; --ink:#23232a; --ink-soft:#5a5a63;
+    --line:#d8cfba; --grid:#dfe3ec; --accent:#d95d2b; --accent-deep:#b8451a;
+    --card:#fffdf7; --ok:#2e7d5b; --err:#b0452e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background:radial-gradient(circle at 15% 12%,rgba(217,93,43,.08),transparent 30%),radial-gradient(circle at 88% 82%,rgba(43,80,120,.06),transparent 32%),var(--paper);
+    color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100%}
+  .wrap{max-width:900px;margin:0 auto;padding:22px 16px 60px}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .logo{width:42px;height:42px;flex:none}
+  .logo svg{width:100%;height:100%;display:block}
+  h1{font-size:23px;letter-spacing:1px;font-weight:700}
+  .sub{color:var(--ink-soft);font-size:13px;margin-top:2px}
+  .board-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 10px 26px rgba(40,32,20,.08)}
+  .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .tbtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;color:var(--ink);
+    padding:7px 11px;border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s}
+  .tbtn:hover{background:#f6efe0;border-color:#cfbfa0}
+  .tbtn:disabled{opacity:.45;cursor:not-allowed}
+  .spacer{flex:1}
+  .wseg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .wseg button{width:32px;height:30px;border:none;background:#fff;cursor:pointer;font-size:12px;color:var(--ink-soft);font-family:inherit}
+  .wseg button.on{background:#23232a;color:#fff}
+  .canvas-box{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--grid)}
+  canvas{display:block;width:100%;height:auto;background:
+    repeating-linear-gradient(0deg,transparent 0 39px,var(--grid) 39px 40px),
+    repeating-linear-gradient(90deg,transparent 0 39px,var(--grid) 39px 40px),#fffdfa;
+    cursor:crosshair;touch-action:none}
+  .hint{font-size:12px;color:var(--ink-soft);margin-top:8px;line-height:1.7}
+  .hint b{color:var(--accent-deep)}
+  .action-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;align-items:center}
+  .btn{flex:1;min-width:120px;border:none;border-radius:11px;padding:13px 16px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:background .15s,transform .1s}
+  .btn:active{transform:translateY(1px)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:var(--accent-deep)}
+  .status{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-soft)}
+  .dot{width:8px;height:8px;border-radius:50%;background:#c9c2b2}
+  .status[data-state="ready"] .dot{background:var(--ok)}
+  .status[data-state="busy"] .dot{background:var(--accent);animation:pulse .9s infinite}
+  .status[data-state="err"] .dot{background:var(--err)}
+  @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+  .progress{display:none;margin-top:10px;height:6px;background:#efe6d1;border-radius:99px;overflow:hidden}
+  .progress.show{display:block}
+  .progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+  .result-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:18px;box-shadow:0 10px 26px rgba(40,32,20,.08)}
+  .result-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .result-head h2{font-size:16px}
+  .badge{font-size:12px;padding:3px 9px;border-radius:99px;background:var(--paper-2);color:var(--ink-soft)}
+  .badge.ok{background:#eef2ec;color:var(--ok)}
+  .badge.err{background:#f7e4df;color:var(--err)}
+  .res-text{min-height:44px;font-size:26px;letter-spacing:2px;line-height:1.5;font-weight:600}
+  .res-text.empty{color:var(--ink-soft);font-size:14px;font-weight:400;letter-spacing:0}
+  .res-meta{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-size:12px;color:var(--ink-soft)}
+  .copy{border:1px solid var(--line);background:#fff;color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit}
+  .copy:disabled{opacity:.45;cursor:not-allowed}
+  footer{margin-top:16px;font-size:12px;color:var(--ink-soft);text-align:center;line-height:1.8}
+  footer code{background:#efe6d1;padding:1px 6px;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">
+      <svg viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#1b1b1f"/><path d="M6 17c4-6 5-9 6-11 1 2 2 5 6 11" stroke="#e8733f" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div>
+      <h1>手写识别</h1>
+      <div class="sub">在纸上写字，导出为图片后由浏览器本地的 OCR 识别文字</div>
+    </div>
+  </header>
+
+  <section class="board-card">
+    <div class="toolbar">
+      <div class="wseg" title="笔画粗细">
+        <button data-w="4">细</button>
+        <button class="on" data-w="6">中</button>
+        <button data-w="10">粗</button>
+      </div>
+      <div class="spacer"></div>
+      <button class="tbtn" id="undoBtn" type="button">撤销</button>
+      <button class="tbtn" id="clearBtn" type="button">清空</button>
+    </div>
+
+    <div class="canvas-box"><canvas id="board"></canvas></div>
+    <div class="hint">一次写 <b>1~5 个字</b>，字写大一点、工整一点，识别效果更好。识别在浏览器本地完成，不上传服务器。</div>
+
+    <div class="action-row">
+      <button class="btn btn-primary" id="recognizeBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M7 3H5a2 2 0 0 0-2 2v2M17 3h2a2 2 0 0 1 2 2v2M7 21H5a2 2 0 0 1-2-2v-2M17 21h2a2 2 0 0 0 2-2v-2"/><path d="M9 12h6M12 9v6"/></svg>
+        <span id="recognizeLabel">识别文字</span>
+      </button>
+      <span class="status" id="status" data-state="idle"><i class="dot"></i><span id="statusText">就绪</span></span>
+    </div>
+    <div class="progress" id="prog"><i id="progBar"></i></div>
+  </section>
+
+  <section class="result-card">
+    <div class="result-head"><h2>识别结果</h2><span class="badge" id="badge">待识别</span></div>
+    <div class="res-text empty" id="resText">在上面写完字，点击「识别文字」。</div>
+    <div class="res-meta">
+      <span id="meta"></span>
+      <button class="copy" id="copyBtn" type="button" disabled>复制结果</button>
+    </div>
+  </section>
+
+  <footer>
+    免费 · 无需密钥 · 无需服务器 · 无需安装。<br>
+    识别引擎：Tesseract.js（<code>chi_sim</code>），首次使用时需联网下载约 15MB 中文模型，之后浏览器会自动缓存，可离线复用。
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+  const statusEl = document.getElementById('status');
+  const statusText = document.getElementById('statusText');
+  const resText = document.getElementById('resText');
+  const badge = document.getElementById('badge');
+  const meta = document.getElementById('meta');
+  const prog = document.getElementById('prog');
+  const progBar = document.getElementById('progBar');
+  const recognizeBtn = document.getElementById('recognizeBtn');
+  const recognizeLabel = document.getElementById('recognizeLabel');
+  const copyBtn = document.getElementById('copyBtn');
+  const undoBtn = document.getElementById('undoBtn');
+  const clearBtn = document.getElementById('clearBtn');
+
+  let inkWidth = 6;
+  let isDrawing = false;
+  let strokes = [];
+  let current = null;
+  let boardW = 0, boardH = 0;
+  let worker = null;
+  let workerPromise = null;
+
+  function setStatus(state, text) {
+    statusEl.dataset.state = state;
+    statusText.textContent = text;
+  }
+  function setProgress(frac) {
+    prog.classList.add('show');
+    progBar.style.width = Math.round(frac * 100) + '%';
+  }
+
+  function fit() {
+    const box = canvas.parentElement;
+    const w = Math.max(box.clientWidth, 1);
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const h = Math.max(260, Math.min(420, w * 0.7));
+    if (boardW > 0 && boardH > 0) {
+      const sx = w / boardW, sy = h / boardH;
+      for (const s of strokes) for (const p of s.pts) { p.x *= sx; p.y *= sy; }
+    }
+    boardW = w; boardH = h;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    canvas.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    redraw();
+  }
+
+  function paintStroke(s) {
+    const pts = s.pts;
+    ctx.strokeStyle = '#1b1a18';
+    ctx.fillStyle = '#1b1a18';
+    ctx.lineWidth = s.w;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (pts.length === 1) {
+      ctx.beginPath(); ctx.arc(pts[0].x, pts[0].y, s.w / 2, 0, Math.PI * 2); ctx.fill();
+      return;
+    }
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.stroke();
+  }
+
+  function redraw() {
+    ctx.clearRect(0, 0, boardW, boardH);
+    for (const s of strokes) paintStroke(s);
+  }
+
+  function pointFromEvent(e) {
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  function onDown(e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    isDrawing = true;
+    current = { w: inkWidth, pts: [pointFromEvent(e)] };
+    strokes.push(current);
+    canvas.setPointerCapture && canvas.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  }
+  function onMove(e) {
+    if (!isDrawing || !current) return;
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+    for (const ev of evs) {
+      const p = pointFromEvent(ev);
+      const last = current.pts[current.pts.length - 1];
+      if (last && Math.hypot(p.x - last.x, p.y - last.y) < 0.6) continue;
+      current.pts.push(p);
+    }
+    if (current.pts.length) paintStroke(current);
+    e.preventDefault();
+  }
+  function onUp() { isDrawing = false; current = null; }
+
+  function undo() {
+    if (isDrawing || !strokes.length) return;
+    strokes.pop(); redraw();
+  }
+  function clearAll() {
+    strokes = []; current = null; isDrawing = false; redraw();
+    setResultEmpty('在上面写完字，点击「识别文字」。');
+    badge.textContent = '待识别'; badge.className = 'badge';
+    meta.textContent = '';
+  }
+
+  /* 把笔迹导出为干净的白底黑字 PNG */
+  function exportInkCanvas() {
+    const live = strokes.filter(s => s.pts.length);
+    if (!live.length) return null;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const s of live) for (const p of s.pts) {
+      if (p.x < x0) x0 = p.x; if (p.x > x1) x1 = p.x;
+      if (p.y < y0) y0 = p.y; if (p.y > y1) y1 = p.y;
+    }
+    const bw = x1 - x0, bh = y1 - y0;
+    const pad = Math.max(16, Math.max(bw, bh) * 0.12);
+    const cw = bw + pad * 2, ch = bh + pad * 2;
+    const TARGET = 640;
+    let scale = TARGET / Math.max(cw, ch);
+    scale = Math.max(1, Math.min(4, scale));
+    const outW = Math.max(1, Math.round(cw * scale));
+    const outH = Math.max(1, Math.round(ch * scale));
+    const cv = document.createElement('canvas');
+    cv.width = outW; cv.height = outH;
+    const c = cv.getContext('2d');
+    c.fillStyle = '#ffffff'; c.fillRect(0, 0, outW, outH);
+    c.strokeStyle = '#000000'; c.fillStyle = '#000000';
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    for (const s of live) {
+      const pts = s.pts.map(p => ({ x: (p.x - x0 + pad) * scale, y: (p.y - y0 + pad) * scale }));
+      const lw = Math.max(2.5, s.w * scale);
+      if (pts.length === 1) {
+        c.beginPath(); c.arc(pts[0].x, pts[0].y, lw / 2, 0, Math.PI * 2); c.fill();
+        continue;
+      }
+      c.lineWidth = lw; c.beginPath(); c.moveTo(pts[0].x, pts[0].y);
+      for (let k = 1; k < pts.length; k++) c.lineTo(pts[k].x, pts[k].y);
+      c.stroke();
+    }
+    return cv;
+  }
+
+  async function ensureWorker() {
+    if (worker) return worker;
+    if (workerPromise) return workerPromise;
+    workerPromise = (async () => {
+      const w = await Tesseract.createWorker('chi_sim', 1, {
+        logger: m => {
+          if (m.status === 'loading language traineddata') {
+            setStatus('busy', '正在下载中文模型 ' + Math.round((m.progress || 0) * 100) + '%');
+            setProgress(m.progress || 0);
+          } else if (m.status === 'recognizing text') {
+            setStatus('busy', '识别中 ' + Math.round((m.progress || 0) * 100) + '%');
+            setProgress(m.progress || 0);
+          }
+        },
+      });
+      await w.setParameters({
+        tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
+        preserve_interword_spaces: '0',
+        load_system_dawg: '0',
+        load_freq_dawg: '0',
+        user_defined_dpi: '300',
+      });
+      worker = w;
+      return w;
+    })();
+    try { return await workerPromise; }
+    catch (err) { workerPromise = null; throw err; }
+  }
+
+  function setResultEmpty(text) {
+    resText.textContent = text;
+    resText.classList.add('empty');
+  }
+
+  async function recognize() {
+    if (!strokes.some(s => s.pts.length)) {
+      setResultEmpty('纸面上还没有字，先写点内容。');
+      return;
+    }
+    recognizeBtn.disabled = true;
+    recognizeLabel.textContent = '识别中…';
+    prog.classList.add('show');
+    try {
+      const w = await ensureWorker();
+      const img = exportInkCanvas();
+      setStatus('busy', '识别中…');
+      badge.textContent = '识别中';
+      badge.className = 'badge';
+      const t0 = performance.now();
+      const { data } = await w.recognize(img);
+      const ms = Math.round(performance.now() - t0);
+      const text = (data.text || '').replace(/\s+/g, '').trim();
+      if (text) {
+        resText.textContent = text;
+        resText.classList.remove('empty');
+        badge.textContent = '完成';
+        badge.className = 'badge ok';
+        meta.textContent = '用时 ' + ms + ' ms · 置信度 ' + Math.round((data.confidence || 0)) + '%';
+        copyBtn.disabled = false;
+      } else {
+        setResultEmpty('没有识别出文字，请清空后写得更工整、更大一些再试。');
+        badge.textContent = '未识别';
+        badge.className = 'badge';
+        copyBtn.disabled = true;
+      }
+      setStatus('ready', '就绪 · 可以继续写');
+    } catch (err) {
+      setResultEmpty('识别失败：' + (err && err.message ? err.message : err) + '\n\n首次使用需要联网下载模型，请确认能访问网络后重试。');
+      badge.textContent = '失败';
+      badge.className = 'badge err';
+      copyBtn.disabled = true;
+      setStatus('err', '识别失败');
+    } finally {
+      recognizeBtn.disabled = false;
+      recognizeLabel.textContent = '识别文字';
+      prog.classList.remove('show');
+    }
+  }
+
+  copyBtn.addEventListener('click', async () => {
+    const t = resText.textContent.trim();
+    if (!t || resText.classList.contains('empty')) return;
+    try { await navigator.clipboard.writeText(t); }
+    catch {
+      const ta = document.createElement('textarea'); ta.value = t;
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch {}
+      ta.remove();
+    }
+    copyBtn.textContent = '已复制 ✓';
+    setTimeout(() => { copyBtn.textContent = '复制结果'; }, 1400);
+  });
+
+  canvas.addEventListener('pointerdown', onDown);
+  window.addEventListener('pointermove', onMove, { passive: false });
+  window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', onUp);
+  undoBtn.addEventListener('click', undo);
+  clearBtn.addEventListener('click', clearAll);
+  recognizeBtn.addEventListener('click', recognize);
+
+  document.querySelectorAll('.wseg button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.wseg button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      inkWidth = +b.dataset.w;
+    });
+  });
+
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); }
+  });
+
+  if (typeof ResizeObserver === 'function') new ResizeObserver(fit).observe(canvas.parentElement);
+  else window.addEventListener('resize', fit);
+  fit();
+  setStatus('ready', '就绪 · 写几个字然后点「识别文字」');
+
+  window.__ocr = {
+    exportInkCanvas,
+    recognize,
+    setStrokes: (s) => { strokes = s; redraw(); },
+    getResult: () => resText.textContent,
+    isReady: () => !!worker,
+  };
+})();
+</script>
+</body>
+</html>
