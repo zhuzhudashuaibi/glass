@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>手写识别 · 墨迹（在线版）</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='5' fill='%231b1b1f'/><path d='M6 17c4-6 5-9 6-11 1 2 2 5 6 11' stroke='%23e8733f' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">
+      <svg viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#1b1b1f"/><path d="M6 17c4-6 5-9 6-11 1 2 2 5 6 11" stroke="#e8733f" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div>
+      <h1>手写识别</h1>
+      <div class="sub">用鼠标或手指在纸上写字，由在线识别服务转成文字</div>
+    </div>
+  </header>
+
+  <div class="main">
+    <section class="board-card">
+      <div class="toolbar">
+        <div class="swatches" title="笔色">
+          <button class="sw black on" data-c="#23232a" aria-label="黑色"></button>
+          <button class="sw red" data-c="#c0392b" aria-label="红色"></button>
+          <button class="sw blue" data-c="#2471a3" aria-label="蓝色"></button>
+        </div>
+        <div class="wseg" title="粗细">
+          <button data-w="3">细</button>
+          <button class="on" data-w="6">中</button>
+          <button data-w="11">粗</button>
+        </div>
+        <div class="spacer"></div>
+        <button class="tbtn" id="demoBtn" title="画一段示例笔迹">写个示例</button>
+        <button class="tbtn" id="undoBtn" title="撤销上一步">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h9a5 5 0 1 1 0 10h-4"/><path d="M3 8l4-4M3 8l4 4"/></svg>撤销
+        </button>
+        <button class="tbtn" id="clearBtn" title="清空纸面">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v6M14 10v6"/></svg>清空
+        </button>
+      </div>
+
+      <div class="canvas-box">
+        <canvas id="board"></canvas>
+        <div class="canvas-hint" id="canvasHint">在这里写字</div>
+      </div>
+      <div class="hint">一次写 <b>1~5 个字</b>、尽量写工整，识别效果最好。手写图片只会发送到你本机的转发服务，再转发给识别接口。</div>
+
+      <div class="action-row">
+        <button class="btn btn-primary" id="recognizeBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3H5a2 2 0 0 0-2 2v2M17 3h2a2 2 0 0 1 2 2v2M7 21H5a2 2 0 0 1-2-2v-2M17 21h2a2 2 0 0 0 2-2v-2"/><path d="M9 12h6M12 9v6"/></svg>
+          识别文字
+        </button>
+      </div>
+      <div class="progress" id="prog"><span id="progLabel">准备中…</span><div class="bar"><i id="progBar"></i></div></div>
+
+      <details class="settings">
+        <summary>识别服务设置</summary>
+        <div class="field">
+          <label for="endpointInput">转发服务地址（本机代理）</label>
+          <div class="row">
+            <input id="endpointInput" type="text" spellcheck="false" placeholder="http://localhost:8787/api/handwriting">
+            <button class="tbtn" id="saveEndpoint" type="button">保存</button>
+            <button class="tbtn" id="testServer" type="button">测试连接</button>
+          </div>
+        </div>
+        <div class="server-state" id="serverState" data-state="idle"><i></i><span id="serverStateText">未检测</span></div>
+        <div class="hint" style="margin-top:10px">
+          识别密钥保存在本机代理里，不写进网页。默认地址可用，若代理跑在别的端口请改成对应地址。
+        </div>
+      </details>
+    </section>
+
+    <section class="result-card">
+      <div class="result-head">
+        <h2>识别结果</h2>
+        <span class="badge" id="badge">待识别</span>
+      </div>
+      <div class="res-text empty" id="resText">在上面纸上写完字，点击「识别文字」。</div>
+      <div class="res-meta">
+        <span id="conf"></span>
+        <button class="copy" id="copyBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          复制
+        </button>
+      </div>
+      <div class="note">识别结果若有误，可先「清空」再写得更工整重试，或直接修改上方结果框里的文字。</div>
+    </section>
+  </div>
+
+  <footer>识别由你自己的在线接口完成 · 需先启动本机转发服务 <code>node server.mjs</code></footer>
+</div>
+
+<script src="./app.js"></script>
+</body>
+</html>

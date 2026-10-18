@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>手写识别 · 墨迹（在线版）</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='5' fill='%231b1b1f'/><path d='M6 17c4-6 5-9 6-11 1 2 2 5 6 11' stroke='%23e8733f' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<style>
+:root {
+  --paper: #f6efe0;
+  --paper-2: #efe6d1;
+  --ink: #23232a;
+  --ink-soft: #5a5a63;
+  --line: #d8cfba;
+  --grid: #dfe3ec;
+  --accent: #d95d2b;
+  --accent-deep: #b8451a;
+  --card: #fffdf7;
+  --ok: #2e7d5b;
+  --err: #b3372a;
+  --font-sans: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+  --font-serif: "Songti SC", "SimSun", "Noto Serif SC", "STSong", serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  font-family: var(--font-sans);
+  background:
+    radial-gradient(circle at 15% 12%, rgba(217, 93, 43, .08), transparent 30%),
+    radial-gradient(circle at 88% 82%, rgba(43, 80, 120, .06), transparent 32%),
+    var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100%;
+}
+
+.wrap { max-width: 960px; margin: 0 auto; padding: 22px 16px 60px; }
+
+/* ---------- 顶部 ---------- */
+header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.logo { width: 42px; height: 42px; flex: none; }
+.logo svg { width: 100%; height: 100%; display: block; }
+h1 { font-family: var(--font-serif); font-weight: 700; font-size: 24px; letter-spacing: 1px; }
+.sub { color: var(--ink-soft); font-size: 13px; margin-top: 2px; }
+
+/* ---------- 布局 ---------- */
+.main { display: flex; flex-direction: column; gap: 18px; }
+
+.board-card, .result-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 10px 26px rgba(40, 32, 20, .08);
+}
+
+/* ---------- 工具栏 ---------- */
+.toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.tbtn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--line); background: #fff; color: var(--ink);
+  padding: 7px 11px; border-radius: 9px; font-size: 13px; cursor: pointer;
+  font-family: inherit; transition: background .15s, border-color .15s;
+}
+.tbtn:hover { background: var(--paper); border-color: #cfbfa0; }
+.tbtn svg { width: 16px; height: 16px; }
+.spacer { flex: 1; }
+
+.swatches { display: flex; gap: 5px; align-items: center; margin-right: 2px; }
+.sw { width: 20px; height: 20px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0; transition: transform .12s; }
+.sw.on { border-color: var(--ink); transform: scale(1.12); }
+.sw.black { background: #23232a; }
+.sw.red { background: #c0392b; }
+.sw.blue { background: #2471a3; }
+
+.wseg { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+.wseg button { width: 30px; height: 30px; border: none; background: #fff; cursor: pointer; font-size: 12px; color: var(--ink-soft); font-family: inherit; }
+.wseg button.on { background: var(--ink); color: #fff; }
+
+/* ---------- 画布 ---------- */
+.canvas-box { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--grid); }
+.canvas-box canvas {
+  display: block; width: 100%; height: auto; cursor: crosshair; touch-action: none;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 39px, var(--grid) 39px 40px),
+    repeating-linear-gradient(90deg, transparent 0 39px, var(--grid) 39px 40px),
+    #fffdfa;
+}
+.canvas-hint {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: #b4aa92; font-size: 15px; letter-spacing: 2px; pointer-events: none; transition: opacity .2s;
+}
+.canvas-hint[hidden] { display: none; }
+.hint { font-size: 12px; color: var(--ink-soft); margin-top: 8px; line-height: 1.7; }
+.hint b { color: var(--accent-deep); font-weight: 600; }
+
+/* ---------- 按钮 ---------- */
+.action-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.btn {
+  flex: 1; min-width: 120px; border: none; border-radius: 11px; padding: 13px 16px;
+  font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background .15s, transform .1s;
+}
+.btn:active { transform: translateY(1px); }
+.btn svg { width: 18px; height: 18px; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-deep); }
+.btn-ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+.btn-ghost:hover { background: var(--paper); }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+
+/* ---------- 进度 ---------- */
+.progress { display: none; align-items: center; gap: 10px; margin-top: 12px; font-size: 12.5px; color: var(--ink-soft); }
+.progress.show { display: flex; }
+.bar { flex: 1; height: 8px; border-radius: 5px; background: #e8dfcc; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 5px; transition: width .2s; }
+
+/* ---------- 结果 ---------- */
+.result-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.result-head h2 { font-family: var(--font-serif); font-weight: 700; font-size: 18px; }
+.badge { font-size: 12px; padding: 3px 9px; border-radius: 20px; background: var(--paper-2); color: var(--ink-soft); font-weight: 600; }
+
+.res-text {
+  min-height: 120px; border: 1px dashed #cfc6ae; border-radius: 9px; padding: 14px;
+  font-size: 22px; line-height: 1.9; background: #fffdf8; letter-spacing: 1px;
+  color: var(--ink); white-space: pre-wrap; word-break: break-all; font-family: var(--font-serif);
+}
+.res-text.empty { color: #b4aa92; font-size: 16px; font-family: var(--font-sans); line-height: 1.7; }
+
+.res-meta { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 12px; color: var(--ink-soft); flex-wrap: wrap; }
+.copy {
+  display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: #fff; color: var(--ink);
+  padding: 6px 12px; border-radius: 8px; font-size: 12.5px; cursor: pointer; font-family: inherit; margin-left: auto;
+}
+.copy:hover { background: var(--paper); }
+.copy svg { width: 14px; height: 14px; }
+
+.note { margin-top: 14px; font-size: 12.5px; line-height: 1.8; color: var(--ink-soft); background: var(--paper-2); border-radius: 9px; padding: 10px 12px; border: 1px solid var(--line); }
+.note b { color: var(--accent-deep); }
+
+/* ---------- 设置 ---------- */
+.settings { margin-top: 14px; border-top: 1px dashed var(--line); padding-top: 12px; }
+.settings summary { cursor: pointer; font-size: 12.5px; color: var(--ink-soft); list-style: none; user-select: none; }
+.settings summary::-webkit-details-marker { display: none; }
+.settings summary::before { content: "⚙ "; }
+.settings[open] summary { margin-bottom: 10px; }
+.field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+.field label { font-size: 12px; color: var(--ink-soft); }
+.field input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px;
+  padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink);
+}
+.field input:focus { outline: 2px solid rgba(217, 93, 43, .35); outline-offset: 0; border-color: var(--accent); }
+.field .row { display: flex; gap: 8px; }
+.field .row input { flex: 1; }
+
+.server-state { font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
+.server-state i { width: 8px; height: 8px; border-radius: 50%; background: #c9c2ae; display: inline-block; }
+.server-state[data-state="ok"] i { background: var(--ok); }
+.server-state[data-state="err"] i { background: var(--err); }
+.server-state[data-state="busy"] i { background: var(--accent); animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+
+footer { margin-top: 30px; text-align: center; font-size: 12px; color: #9a917d; line-height: 1.9; }
+footer code { font-family: ui-monospace, Menlo, Consolas, monospace; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: 11.5px; }
+
+/* ---------- 响应式 ---------- */
+@media (min-width: 768px) {
+  .wrap { padding-top: 34px; }
+  .main { flex-direction: row; align-items: flex-start; }
+  .board-card { flex: 1.25; }
+  .result-card { flex: 1; }
+  h1 { font-size: 28px; }
+  .canvas-box { min-height: 340px; }
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">
+      <svg viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#1b1b1f"/><path d="M6 17c4-6 5-9 6-11 1 2 2 5 6 11" stroke="#e8733f" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div>
+      <h1>手写识别</h1>
+      <div class="sub">用鼠标或手指在纸上写字，由在线识别服务转成文字</div>
+    </div>
+  </header>
+
+  <div class="main">
+    <section class="board-card">
+      <div class="toolbar">
+        <div class="swatches" title="笔色">
+          <button class="sw black on" data-c="#23232a" aria-label="黑色"></button>
+          <button class="sw red" data-c="#c0392b" aria-label="红色"></button>
+          <button class="sw blue" data-c="#2471a3" aria-label="蓝色"></button>
+        </div>
+        <div class="wseg" title="粗细">
+          <button data-w="3">细</button>
+          <button class="on" data-w="6">中</button>
+          <button data-w="11">粗</button>
+        </div>
+        <div class="spacer"></div>
+        <button class="tbtn" id="demoBtn" title="画一段示例笔迹">写个示例</button>
+        <button class="tbtn" id="undoBtn" title="撤销上一步">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h9a5 5 0 1 1 0 10h-4"/><path d="M3 8l4-4M3 8l4 4"/></svg>撤销
+        </button>
+        <button class="tbtn" id="clearBtn" title="清空纸面">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v6M14 10v6"/></svg>清空
+        </button>
+      </div>
+
+      <div class="canvas-box">
+        <canvas id="board"></canvas>
+        <div class="canvas-hint" id="canvasHint">在这里写字</div>
+      </div>
+      <div class="hint">一次写 <b>1~5 个字</b>、尽量写工整，识别效果最好。手写图片只会发送到你本机的转发服务，再转发给识别接口。</div>
+
+      <div class="action-row">
+        <button class="btn btn-primary" id="recognizeBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3H5a2 2 0 0 0-2 2v2M17 3h2a2 2 0 0 1 2 2v2M7 21H5a2 2 0 0 1-2-2v-2M17 21h2a2 2 0 0 0 2-2v-2"/><path d="M9 12h6M12 9v6"/></svg>
+          识别文字
+        </button>
+      </div>
+      <div class="progress" id="prog"><span id="progLabel">准备中…</span><div class="bar"><i id="progBar"></i></div></div>
+
+      <details class="settings">
+        <summary>识别服务设置</summary>
+        <div class="field">
+          <label for="endpointInput">转发服务地址（本机代理）</label>
+          <div class="row">
+            <input id="endpointInput" type="text" spellcheck="false" placeholder="http://localhost:8787/api/handwriting">
+            <button class="tbtn" id="saveEndpoint" type="button">保存</button>
+            <button class="tbtn" id="testServer" type="button">测试连接</button>
+          </div>
+        </div>
+        <div class="server-state" id="serverState" data-state="idle"><i></i><span id="serverStateText">未检测</span></div>
+        <div class="hint" style="margin-top:10px">
+          识别密钥保存在本机代理里，不写进网页。默认地址可用，若代理跑在别的端口请改成对应地址。
+        </div>
+      </details>
+    </section>
+
+    <section class="result-card">
+      <div class="result-head">
+        <h2>识别结果</h2>
+        <span class="badge" id="badge">待识别</span>
+      </div>
+      <div class="res-text empty" id="resText">在上面纸上写完字，点击「识别文字」。</div>
+      <div class="res-meta">
+        <span id="conf"></span>
+        <button class="copy" id="copyBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          复制
+        </button>
+      </div>
+      <div class="note">识别结果若有误，可先「清空」再写得更工整重试，或直接修改上方结果框里的文字。</div>
+    </section>
+  </div>
+
+  <footer>识别由你自己的在线接口完成 · 需先启动本机转发服务 <code>node server.mjs</code></footer>
+</div>
+
+<script id="samplesData" type="application/json">{"你":[[[317,812],[342,786],[353,759],[303,663],[249,577],[181,485],[93,386],[68,367]],[[273,558],[274,525],[285,495],[284,441],[273,243],[256,123],[260,41]],[[556,828],[574,817],[595,783],[584,746],[539,640],[481,531],[428,453],[406,431]],[[513,532],[704,585],[796,597],[813,585],[827,563],[798,519],[746,460]],[[586,463],[615,438],[632,412],[627,73],[616,41],[604,30],[558,47],[490,85]],[[455,316],[437,243],[397,151]],[[742,326],[812,265],[856,216],[871,190],[878,154]]],"好":[[[282,788],[307,769],[327,733],[264,465],[216,321],[235,298],[386,194],[411,166],[424,133]],[[390,556],[417,530],[424,516],[422,504],[387,361],[338,255],[304,207],[260,165],[206,127],[137,97]],[[59,457],[107,434],[373,491],[380,501]],[[493,656],[517,646],[550,644],[680,692],[706,699],[743,696],[771,669],[765,657],[677,546],[674,535],[663,536]],[[613,530],[637,519],[659,499],[674,474],[687,432],[711,289],[709,166],[692,92],[672,59],[648,41],[551,85]],[[449,384],[504,377],[860,427],[906,426],[960,412]]],"世":[[[93,412],[159,395],[409,442],[853,502],[897,494],[948,475]],[[461,720],[496,680],[509,492],[507,321],[476,286]],[[661,757],[706,718],[706,695],[673,348],[656,328]],[[480,267],[497,257],[539,274],[622,293],[684,301],[710,294]],[[263,636],[292,619],[307,596],[328,268],[325,92],[375,90],[485,112],[759,136],[837,118]]],"界":[[[242,777],[271,756],[288,718],[343,519]],[[301,775],[323,764],[481,791],[641,809],[677,807],[697,799],[723,765],[671,607],[650,560],[653,536]],[[372,655],[414,657],[565,688],[607,683]],[[466,767],[494,742],[493,607],[477,582]],[[361,534],[378,544],[596,575],[612,582]],[[384,522],[405,501],[406,492],[356,423],[299,366],[220,300],[117,241],[68,223]],[[530,546],[685,402],[787,326],[846,309],[970,291]],[[363,340],[399,307],[387,208],[375,168],[343,108],[323,84],[249,33]],[[563,386],[574,380],[595,349],[591,35],[607,-49]]],"手":[[[696,777],[623,796],[504,743],[388,705],[314,690]],[[319,563],[387,557],[515,578],[654,611],[700,610]],[[111,362],[168,352],[395,390],[830,435],[869,430],[926,412]],[[474,710],[512,683],[538,532],[557,281],[556,186],[548,115],[520,46],[492,22],[372,81]]],"写":[[[268,748],[281,716],[279,695],[228,582],[225,533]],[[314,712],[328,702],[366,703],[495,728],[699,752],[745,743],[759,733],[773,707],[686,625]],[[435,500],[451,511],[524,521],[621,550],[672,546]],[[389,634],[412,612],[420,594],[373,347],[428,346],[542,372],[692,389],[735,383],[768,354],[730,141],[709,73],[690,39],[659,20],[554,91]],[[169,180],[194,171],[239,170],[320,191],[551,230],[625,212]]],"汉":[[[231,767],[311,720],[340,680]],[[132,576],[211,521],[234,492]],[[198,35],[184,73],[183,121],[216,175],[336,414]],[[371,592],[397,582],[435,581],[659,629],[692,624],[711,608],[656,417],[614,328],[568,258],[520,202],[468,160],[392,112],[296,65]],[[387,476],[418,461],[447,436],[613,226],[732,115],[847,82],[963,60]]],"字":[[[438,844],[526,800],[561,758]],[[244,691],[253,657],[241,622],[200,553],[187,494]],[[276,627],[293,637],[486,672],[741,701],[783,687],[798,672],[802,657],[730,572]],[[330,515],[352,504],[385,502],[561,556],[598,550],[621,525],[607,501],[520,411]],[[479,418],[515,363],[532,295],[540,206],[539,138],[523,51],[498,16],[365,85]],[[136,286],[197,268],[374,297],[822,337],[861,329],[907,310]]],"识":[[[278,799],[372,750],[402,710]],[[69,474],[106,466],[126,470],[278,528],[313,527],[323,518],[289,206],[296,171],[318,174],[347,188],[444,275]],[[476,628],[504,603],[513,578],[552,343]],[[540,597],[558,612],[632,622],[741,648],[776,640],[805,609],[803,597],[765,466],[737,445]],[[573,376],[589,391],[710,413],[786,419],[810,410]],[[612,245],[577,238],[541,186],[486,127],[439,85],[383,50]],[[722,277],[816,193],[850,155],[873,114],[882,76]]],"别":[[[194,704],[223,675],[252,484]],[[256,669],[268,684],[282,689],[417,724],[449,719],[475,694],[445,598],[419,579]],[[275,530],[285,523],[302,524],[413,549],[471,542]],[[138,368],[185,358],[429,407],[458,409],[483,395],[491,382],[470,245],[452,170],[426,102],[407,79],[386,68],[305,126]],[[308,498],[339,478],[329,394],[298,282],[268,217],[231,157],[170,84],[116,36]],[[602,595],[631,562],[633,256]],[[760,788],[777,780],[811,748],[811,461],[824,75],[804,25],[754,39],[679,72],[677,78],[666,78]]]}</script>
+<script>
+/* ============================================================
+   手写识别 · 在线版前端逻辑
+   - 画板：鼠标 / 触屏 / 手写笔
+   - 识别：把笔迹导成干净的黑白图片，POST 到本机转发服务，
+           由转发服务调用在线手写识别接口（解决浏览器跨域限制）
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var MAX_SIDE = 900;          // 导出图片最长边上限（px）
+  var TARGET_SIDE = 480;       // 目标最长边（px）
+  var DEFAULT_ENDPOINT = 'http://localhost:8787/api/handwriting';
+  var LS_KEY = 'hw-online-endpoint';
+
+  /* ---------- DOM ---------- */
+  var canvas = document.getElementById('board');
+  var ctx = canvas.getContext('2d');
+  var resText = document.getElementById('resText');
+  var badge = document.getElementById('badge');
+  var confEl = document.getElementById('conf');
+  var prog = document.getElementById('prog');
+  var progLabel = document.getElementById('progLabel');
+  var progBar = document.getElementById('progBar');
+  var recognizeBtn = document.getElementById('recognizeBtn');
+  var copyBtn = document.getElementById('copyBtn');
+  var undoBtn = document.getElementById('undoBtn');
+  var clearBtn = document.getElementById('clearBtn');
+  var demoBtn = document.getElementById('demoBtn');
+  var canvasHint = document.getElementById('canvasHint');
+  var endpointInput = document.getElementById('endpointInput');
+  var saveEndpointBtn = document.getElementById('saveEndpoint');
+  var testServerBtn = document.getElementById('testServer');
+  var serverState = document.getElementById('serverState');
+  var serverStateText = document.getElementById('serverStateText');
+
+  /* ---------- 状态 ---------- */
+  var inkColor = '#23232a';
+  var inkWidth = 6;
+  var isDrawing = false;
+  var strokes = [];            // [{ c, w, pts: [{x, y}] }]
+  var current = null;
+  var recognizing = false;
+  var boardW = 0, boardH = 0;  // CSS 像素尺寸
+
+  /* ============================================================
+     1. 画板
+     ============================================================ */
+  function fit() {
+    var box = document.querySelector('.canvas-box');
+    var w = Math.max(box.clientWidth, 1);
+    var dpr = Math.min(window.devicePixelRatio || 1, 3);
+    var h = Math.max(300, Math.min(440, w * 0.72));
+
+    // 尺寸变化时按比例缩放已有笔迹
+    if (boardW > 0 && boardH > 0) {
+      var sx = w / boardW, sy = h / boardH;
+      for (var i = 0; i < strokes.length; i++) {
+        var pts = strokes[i].pts;
+        for (var j = 0; j < pts.length; j++) { pts[j].x *= sx; pts[j].y *= sy; }
+      }
+    }
+    boardW = w; boardH = h;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    canvas.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    redraw();
+  }
+
+  function redraw() {
+    ctx.clearRect(0, 0, boardW, boardH);
+    for (var i = 0; i < strokes.length; i++) paintStroke(strokes[i]);
+    canvasHint.hidden = strokes.length > 0 || isDrawing;
+  }
+
+  function paintStroke(s) {
+    var pts = s.pts;
+    ctx.strokeStyle = s.c;
+    ctx.fillStyle = s.c;
+    ctx.lineWidth = s.w;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (pts.length === 1) {
+      ctx.beginPath();
+      ctx.arc(pts[0].x, pts[0].y, s.w / 2, 0, Math.PI * 2);
+      ctx.fill();
+      return;
+    }
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.stroke();
+  }
+
+  /* ============================================================
+     2. 书写交互
+     ============================================================ */
+  function pointFromEvent(e) {
+    var r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  function onDown(e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (e.pointerType === 'pen' && e.button === 5) return;
+    isDrawing = true;
+    current = { c: inkColor, w: inkWidth, pts: [pointFromEvent(e)] };
+    strokes.push(current);
+    canvas.setPointerCapture && canvas.setPointerCapture(e.pointerId);
+    canvasHint.hidden = true;
+    e.preventDefault();
+  }
+
+  function onMove(e) {
+    if (!isDrawing || !current) return;
+    var events = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+    var moved = false;
+    for (var i = 0; i < events.length; i++) {
+      var p = pointFromEvent(events[i]);
+      var last = current.pts[current.pts.length - 1];
+      if (last && Math.hypot(p.x - last.x, p.y - last.y) < 0.6) continue;
+      current.pts.push(p);
+      moved = true;
+    }
+    if (moved) paintStroke(current);
+    e.preventDefault();
+  }
+
+  function onUp() {
+    if (!isDrawing) return;
+    isDrawing = false;
+    current = null;
+    canvasHint.hidden = strokes.length > 0;
+  }
+
+  function undo() {
+    if (isDrawing || !strokes.length) return;
+    strokes.pop();
+    redraw();
+  }
+
+  function clearAll() {
+    strokes.length = 0;
+    current = null;
+    isDrawing = false;
+    redraw();
+    setResult('', { empty: true, placeholder: '在上面纸上写完字，点击「识别文字」。' });
+    confEl.textContent = '';
+  }
+
+  /* ============================================================
+     3. 把笔迹导成干净的黑白图片
+     ============================================================ */
+  function inkBounds() {
+    var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (var i = 0; i < strokes.length; i++) {
+      var pts = strokes[i].pts;
+      for (var j = 0; j < pts.length; j++) {
+        var p = pts[j];
+        if (p.x < x0) x0 = p.x;
+        if (p.x > x1) x1 = p.x;
+        if (p.y < y0) y0 = p.y;
+        if (p.y > y1) y1 = p.y;
+      }
+    }
+    return { x0: x0, y0: y0, x1: x1, y1: y1, w: x1 - x0, h: y1 - y0 };
+  }
+
+  /**
+   * 导出识别用的 PNG（白底黑字、按笔迹裁边、留白、放大到合适分辨率）。
+   * 返回 { dataUrl, base64, width, height }，没有笔迹时返回 null。
+   */
+  function exportInkImage() {
+    var live = strokes.filter(function (s) { return s.pts.length; });
+    if (!live.length) return null;
+
+    var b = inkBounds();
+    var pad = Math.max(10, Math.max(b.w, b.h) * 0.09);
+    var bw = b.w + pad * 2;
+    var bh = b.h + pad * 2;
+
+    var scale = TARGET_SIDE / Math.max(bw, bh);
+    scale = Math.max(1, Math.min(3, scale));
+    if (Math.max(bw, bh) * scale > MAX_SIDE) scale = MAX_SIDE / Math.max(bw, bh);
+
+    var outW = Math.max(1, Math.round(bw * scale));
+    var outH = Math.max(1, Math.round(bh * scale));
+
+    var cv = document.createElement('canvas');
+    cv.width = outW;
+    cv.height = outH;
+    var c = cv.getContext('2d');
+    c.fillStyle = '#ffffff';
+    c.fillRect(0, 0, outW, outH);
+    c.strokeStyle = '#000000';
+    c.fillStyle = '#000000';
+    c.lineCap = 'round';
+    c.lineJoin = 'round';
+
+    for (var i = 0; i < live.length; i++) {
+      var s = live[i];
+      var map = s.pts.map(function (p) {
+        return { x: (p.x - b.x0 + pad) * scale, y: (p.y - b.y0 + pad) * scale };
+      });
+      var lw = Math.max(2, s.w * scale);
+      if (map.length === 1) {
+        c.beginPath();
+        c.arc(map[0].x, map[0].y, lw / 2, 0, Math.PI * 2);
+        c.fill();
+        continue;
+      }
+      c.lineWidth = lw;
+      c.beginPath();
+      c.moveTo(map[0].x, map[0].y);
+      for (var k = 1; k < map.length; k++) c.lineTo(map[k].x, map[k].y);
+      c.stroke();
+    }
+
+    var dataUrl = cv.toDataURL('image/png');
+    return {
+      dataUrl: dataUrl,
+      base64: dataUrl.replace(/^data:image\/\w+;base64,/, ''),
+      width: outW,
+      height: outH,
+    };
+  }
+
+  /* ============================================================
+     4. 在线识别
+     ============================================================ */
+  function getEndpoint() {
+    return (localStorage.getItem(LS_KEY) || endpointInput.value || DEFAULT_ENDPOINT).trim();
+  }
+
+  function setProgress(status, frac) {
+    prog.classList.add('show');
+    progLabel.textContent = status;
+    progBar.style.width = Math.round((frac || 0) * 100) + '%';
+  }
+
+  function setBadge(text, kind) {
+    badge.textContent = text;
+    badge.style.background = kind === 'ok' ? '#eef2ec' : kind === 'err' ? '#f7e4df' : 'var(--paper-2)';
+    badge.style.color = kind === 'ok' ? 'var(--ok)' : kind === 'err' ? 'var(--err)' : 'var(--ink-soft)';
+  }
+
+  function setResult(text, opts) {
+    opts = opts || {};
+    if (opts.empty) {
+      resText.textContent = opts.placeholder || '没有识别出文字。';
+      resText.classList.add('empty');
+    } else {
+      resText.textContent = text;
+      resText.classList.remove('empty');
+    }
+  }
+
+  function setServerState(state, text) {
+    serverState.dataset.state = state;
+    serverStateText.textContent = text;
+  }
+
+  async function recognize() {
+    if (recognizing) return;
+    if (!strokes.some(function (s) { return s.pts.length; })) {
+      setResult('', { empty: true, placeholder: '纸面上还没有字，先在上面写点内容。' });
+      return;
+    }
+    recognizing = true;
+    recognizeBtn.disabled = true;
+    recognizeBtn.textContent = '识别中…';
+    setBadge('识别中');
+    setProgress('正在发送识别…', 0.15);
+
+    try {
+      var img = exportInkImage();
+      var endpoint = getEndpoint();
+      var res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: img.base64, width: img.width, height: img.height }),
+      });
+      var data = await res.json().catch(function () { return {}; });
+      setProgress('正在识别…', 0.7);
+
+      if (!res.ok || !data || !data.ok) {
+        throw new Error((data && data.error) || ('服务返回 HTTP ' + res.status));
+      }
+      var text = (data.text || '').trim();
+      if (text) {
+        setResult(text);
+        setBadge('完成', 'ok');
+        confEl.textContent = '用时 ' + Math.round(data.ms || 0) + ' ms' + (data.provider ? ' · ' + data.provider : '');
+      } else {
+        setResult('', { empty: true, placeholder: '没有识别出文字，可能是字迹太潦草，请清空后写得更工整再试。' });
+        setBadge('未识别');
+        confEl.textContent = '';
+      }
+      prog.classList.remove('show');
+    } catch (err) {
+      setResult('识别失败：' + err.message + '\n\n请确认已经运行 `node server.mjs`，且「识别服务设置」里的地址正确。', { empty: true });
+      setBadge('失败', 'err');
+      confEl.textContent = '';
+      prog.classList.remove('show');
+    } finally {
+      recognizing = false;
+      recognizeBtn.disabled = false;
+      recognizeBtn.textContent = '识别文字';
+    }
+  }
+
+  async function testServer() {
+    setServerState('busy', '连接中…');
+    try {
+      var res = await fetch(getEndpoint(), { method: 'GET' });
+      var data = await res.json().catch(function () { return {}; });
+      if (res.ok && data && data.ok) {
+        if (data.configured) setServerState('ok', '已连接 · 接口已配置（' + (data.provider || '在线') + '）');
+        else setServerState('err', '已连接，但服务端还没填识别密钥');
+      } else {
+        setServerState('err', '服务返回异常：HTTP ' + res.status);
+      }
+    } catch (err) {
+      setServerState('err', '连不上转发服务，请先运行 node server.mjs');
+    }
+  }
+
+  /* ============================================================
+     5. 示例笔迹（用参考字形顶点生成，方便快速试识别接口）
+     ============================================================ */
+  var samples = null;
+
+  function loadSamples() {
+    if (samples) return samples;
+    var tag = document.getElementById('samplesData');
+    try { samples = tag ? JSON.parse(tag.textContent) : {}; } catch (e) { samples = {}; }
+    return samples;
+  }
+
+  function bbox(points) {
+    var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (var i = 0; i < points.length; i++) {
+      var x = points[i][0], y = points[i][1];
+      if (x < x0) x0 = x;
+      if (x > x1) x1 = x;
+      if (y < y0) y0 = y;
+      if (y > y1) y1 = y;
+    }
+    return { w: x1 - x0, h: y1 - y0, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 };
+  }
+
+  function drawSample(text) {
+    var data = loadSamples();
+    var chars = Array.from(text || '你好世界').filter(function (ch) { return data[ch]; });
+    if (!chars.length) return false;
+
+    var W = boardW, H = boardH;
+    var cell = Math.min(H * 0.62, (W - 36) / chars.length);
+    var startX = (W - cell * chars.length) / 2;
+    var topY = (H - cell) / 2;
+
+    strokes.length = 0;
+    chars.forEach(function (ch, i) {
+      var medians = data[ch];
+      var all = [];
+      medians.forEach(function (m) { all = all.concat(m); });
+      var b = bbox(all);
+      var scale = Math.min((cell * 0.74) / Math.max(b.w, 1), (cell * 0.74) / Math.max(b.h, 1));
+      var cx = startX + i * cell + cell / 2;
+      var cy = topY + cell / 2;
+      medians.forEach(function (median) {
+        var pts = median.map(function (p) {
+          return { x: (p[0] - b.cx) * scale + cx, y: -(p[1] - b.cy) * scale + cy };
+        });
+        strokes.push({ c: inkColor, w: inkWidth, pts: pts });
+      });
+    });
+    redraw();
+    return true;
+  }
+
+  /* ============================================================
+     6. 事件绑定与初始化
+     ============================================================ */
+  canvas.addEventListener('pointerdown', onDown);
+  window.addEventListener('pointermove', onMove, { passive: false });
+  window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', onUp);
+
+  undoBtn.addEventListener('click', undo);
+  clearBtn.addEventListener('click', clearAll);
+  demoBtn.addEventListener('click', function () { drawSample('你好世界'); });
+  recognizeBtn.addEventListener('click', recognize);
+  testServerBtn.addEventListener('click', testServer);
+
+  saveEndpointBtn.addEventListener('click', function () {
+    var v = endpointInput.value.trim() || DEFAULT_ENDPOINT;
+    endpointInput.value = v;
+    localStorage.setItem(LS_KEY, v);
+    saveEndpointBtn.textContent = '已保存';
+    setTimeout(function () { saveEndpointBtn.textContent = '保存'; }, 1200);
+    testServer();
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('.sw'), function (b) {
+    b.addEventListener('click', function () {
+      Array.prototype.forEach.call(document.querySelectorAll('.sw'), function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      inkColor = b.dataset.c;
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.wseg button'), function (b) {
+    b.addEventListener('click', function () {
+      Array.prototype.forEach.call(document.querySelectorAll('.wseg button'), function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      inkWidth = +b.dataset.w;
+    });
+  });
+
+  copyBtn.addEventListener('click', function () {
+    var t = resText.textContent.trim();
+    if (!t || resText.classList.contains('empty')) return;
+    function done() {
+      copyBtn.textContent = '已复制 ✓';
+      setTimeout(function () { copyBtn.textContent = '复制'; }, 1500);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(done).catch(fallbackCopy);
+    } else fallbackCopy();
+    function fallbackCopy() {
+      var ta = document.createElement('textarea');
+      ta.value = t;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (e) { /* 忽略 */ }
+      document.body.removeChild(ta);
+      done();
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); }
+  });
+
+  if (typeof ResizeObserver === 'function') {
+    new ResizeObserver(fit).observe(document.querySelector('.canvas-box'));
+  } else {
+    window.addEventListener('resize', fit);
+  }
+
+  endpointInput.value = localStorage.getItem(LS_KEY) || DEFAULT_ENDPOINT;
+  fit();
+
+  /* 供自动化测试使用 */
+  window.__hw = {
+    exportInkImage: exportInkImage,
+    recognize: recognize,
+    testServer: testServer,
+    setStrokes: function (s) { strokes.length = 0; Array.prototype.push.apply(strokes, s); redraw(); },
+    drawSample: drawSample,
+    getResult: function () { return resText.textContent; },
+    isConfigured: function () { return serverState.dataset.state; },
+  };
+})();
+
+</script>
+</body>
+</html>
