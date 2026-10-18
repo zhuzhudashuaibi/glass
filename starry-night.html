@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>星夜 · 动态重构</title>
+<style>
+  :root { color-scheme: dark; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: #071029;
+    overflow: hidden;
+    font-family: "Georgia", "Songti SC", serif;
+    cursor: crosshair;
+  }
+  canvas { display: block; }
+  .caption {
+    position: fixed;
+    left: 24px;
+    bottom: 20px;
+    color: rgba(255, 240, 200, 0.85);
+    letter-spacing: 4px;
+    font-size: 15px;
+    text-shadow: 0 0 12px rgba(246, 211, 101, 0.5);
+    pointer-events: none;
+    user-select: none;
+  }
+  .caption small {
+    display: block;
+    margin-top: 6px;
+    letter-spacing: 2px;
+    font-size: 11px;
+    color: rgba(200, 215, 245, 0.55);
+  }
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+<div class="caption">星夜 · THE STARRY NIGHT<small>文森特·梵高 · 动态重构</small></div>
+
+<script>
+(function () {
+  "use strict";
+
+  const canvas = document.getElementById("scene");
+  const ctx = canvas.getContext("2d");
+
+  let W = 0, H = 0, DPR = 1;
+  let particles = [];
+  let vortices = [];
+  let stars = [];
+  let bg = null;          // 静态背景离屏画布
+  let t = 0;
+
+  // ---------- 布局（相对坐标 0..1，按画布尺寸缩放） ----------
+  // 天空漩涡中心（原画里那组巨大的旋涡位于中偏左上方）
+  const VORTICES = [
+    { x: 0.42, y: 0.30, s: 2.4, radius: 0.32 },   // 大旋涡
+    { x: 0.56, y: 0.20, s: -1.6, radius: 0.20 },  // 反向小旋涡
+    { x: 0.30, y: 0.48, s: -1.2, radius: 0.18 },
+    { x: 0.74, y: 0.38, s: 1.3, radius: 0.20 },
+    { x: 0.60, y: 0.55, s: -0.9, radius: 0.16 }
+  ];
+
+  // 星星（发光点位置）
+  const STARS = [
+    { x: 0.62, y: 0.16, r: 0.020 },
+    { x: 0.80, y: 0.24, r: 0.015 },
+    { x: 0.30, y: 0.14, r: 0.014 },
+    { x: 0.47, y: 0.10, r: 0.011 },
+    { x: 0.88, y: 0.42, r: 0.012 },
+    { x: 0.70, y: 0.50, r: 0.010 },
+    { x: 0.25, y: 0.30, r: 0.010 }
+  ];
+
+  const MOON = { x: 0.84, y: 0.13, r: 0.075 };
+
+  // ---------- 尺寸与初始化 ----------
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+    build();
+    spawnParticles();
+    renderBackground();
+  }
+
+  function build() {
+    vortices = VORTICES.map(v => ({
+      x: v.x * W, y: v.y * H, s: v.s * (H / 900), radius: v.radius * Math.max(W, H)
+    }));
+    stars = STARS.map(s => ({ x: s.x * W, y: s.y * H, r: s.r * Math.max(W, H) }));
+    stars.moon = { x: MOON.x * W, y: MOON.y * H, r: MOON.r * Math.max(W, H) };
+  }
+
+  // ---------- 流场：多个旋涡叠加，产生梵高式的卷曲笔触方向 ----------
+  function flowAt(x, y) {
+    let vx = 0.12, vy = 0.0; // 轻微的整体风
+    for (let i = 0; i < vortices.length; i++) {
+      const c = vortices[i];
+      const dx = x - c.x, dy = y - c.y;
+      const r = Math.sqrt(dx * dx + dy * dy) + 1;
+      const falloff = Math.exp(-r / c.radius);
+      const s = c.s * falloff;
+      vx += (-dy / r) * s;
+      vy += (dx / r) * s;
+    }
+    return [vx, vy];
+  }
+
+  // ---------- 粒子（笔触） ----------
+  function spawnParticles() {
+    const count = Math.max(520, Math.min(1400, Math.floor((W * H) / 2400)));
+    particles = [];
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * W,
+        y: Math.random() * H * 0.62,   // 主要分布在天幕区域
+        len: 2 + Math.random() * 4,
+        w: 1.2 + Math.random() * 1.8,
+        speed: 0.6 + Math.random() * 1.2,
+        hue: 0,                         // 运行时计算
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+  }
+
+  // 根据与星星/月亮的距离决定颜色：近处偏暖黄，远处偏蓝
+  function particleColor(x, y, phase) {
+    let closest = 1e9;
+    for (let i = 0; i < stars.length; i++) {
+      const dx = x - stars[i].x, dy = y - stars[i].y;
+      closest = Math.min(closest, dx * dx + dy * dy);
+    }
+    const m = stars.moon;
+    const dm = (x - m.x) * (x - m.x) + (y - m.y) * (y - m.y);
+    closest = Math.min(closest, dm * 0.4);
+
+    const warm = Math.max(0, 1 - Math.sqrt(closest) / (Math.max(W, H) * 0.16));
+    // hue: 210(蓝) -> 48(黄)
+    const hue = 210 - warm * 162;
+    const light = 38 + warm * 30 + Math.sin(phase + t * 0.6) * 6;
+    return "hsla(" + hue + ", 70%, " + light + "%, " + (0.55 + warm * 0.4) + ")";
+  }
+
+  // ---------- 静态背景 ----------
+  function renderBackground() {
+    bg = document.createElement("canvas");
+    bg.width = Math.floor(W * DPR);
+    bg.height = Math.floor(H * DPR);
+    const g = bg.getContext("2d");
+    g.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+    // 天空渐变
+    const sky = g.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0.0, "#060e24");
+    sky.addColorStop(0.35, "#0d2146");
+    sky.addColorStop(0.62, "#16345f");
+    sky.addColorStop(0.82, "#1d3f6b");
+    sky.addColorStop(1.0, "#24486f");
+    g.fillStyle = sky;
+    g.fillRect(0, 0, W, H);
+
+    // 月亮光晕（留一弯新月）
+    const m = stars.moon;
+    let glow = g.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.r * 3.6);
+    glow.addColorStop(0, "rgba(255, 236, 170, 0.95)");
+    glow.addColorStop(0.35, "rgba(246, 211, 101, 0.45)");
+    glow.addColorStop(1, "rgba(246, 211, 101, 0)");
+    g.fillStyle = glow;
+    g.beginPath(); g.arc(m.x, m.y, m.r * 3.6, 0, Math.PI * 2); g.fill();
+
+    // 月亮本体 + 被“咬掉”的新月形
+    g.fillStyle = "#ffe9a3";
+    g.beginPath(); g.arc(m.x, m.y, m.r, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#f2d77c";
+    g.beginPath(); g.arc(m.x - m.r * 0.32, m.y - m.r * 0.12, m.r * 0.85, 0, Math.PI * 2); g.fill();
+    // 让新月更亮
+    g.fillStyle = "#fff6cf";
+    g.beginPath(); g.arc(m.x, m.y, m.r * 0.9, Math.PI * 0.55, Math.PI * 1.5); g.fill();
+
+    // 星星光晕（静态底层，动态光点在主画布叠加）
+    for (let i = 0; i < stars.length; i++) {
+      const s = stars[i];
+      const rg = g.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 6);
+      rg.addColorStop(0, "rgba(255, 244, 214, 0.9)");
+      rg.addColorStop(0.4, "rgba(246, 211, 101, 0.35)");
+      rg.addColorStop(1, "rgba(246, 211, 101, 0)");
+      g.fillStyle = rg;
+      g.beginPath(); g.arc(s.x, s.y, s.r * 6, 0, Math.PI * 2); g.fill();
+    }
+
+    // 远山（起伏的地平线）
+    drawHills(g, H * 0.60, H * 0.72, 90, "#12294c");
+    drawHills(g, H * 0.74, H * 0.90, 150, "#0c1f3d");
+
+    // 村庄剪影
+    drawVillage(g, H * 0.76);
+
+    // 丝柏树（前景，左侧，向上如火焰）
+    drawCypress(g, W * 0.18, H * 0.72, H * 0.55);
+  }
+
+  function drawHills(g, baseY, amp, wavelength, color) {
+    g.fillStyle = color;
+    g.beginPath();
+    g.moveTo(0, H);
+    for (let x = 0; x <= W; x += 4) {
+      const y = baseY + Math.sin(x / wavelength + 1.3) * amp * 0.5
+                   + Math.sin(x / (wavelength * 0.4)) * amp * 0.18;
+      g.lineTo(x, y);
+    }
+    g.lineTo(W, H);
+    g.closePath();
+    g.fill();
+  }
+
+  function drawVillage(g, baseY) {
+    g.fillStyle = "#081426";
+    // 一排低矮房屋
+    const houseY = baseY - H * 0.06;
+    let x = W * 0.28;
+    const rows = [
+      [0.10, 0.05], [0.13, 0.05], [0.09, 0.07], [0.12, 0.05],
+      [0.14, 0.06], [0.10, 0.05]
+    ];
+    const lit = [];
+    for (let i = 0; i < rows.length; i++) {
+      const w = rows[i][0] * W;
+      const h = rows[i][1] * H;
+      g.fillRect(x, houseY - h, w, h + 4);
+      lit.push([x + w * 0.5, houseY - h * 0.5]);
+      x += w + W * 0.015;
+    }
+    // 远处零散房屋
+    g.fillRect(W * 0.02, houseY - H * 0.045, W * 0.06, H * 0.06);
+    g.fillRect(W * 0.09, houseY - H * 0.05, W * 0.05, H * 0.06);
+    g.fillRect(W * 0.60, houseY - H * 0.04, W * 0.05, H * 0.05);
+
+    // 教堂尖塔
+    const cx = W * 0.52, cy = houseY - H * 0.045;
+    g.beginPath();
+    g.moveTo(cx - W * 0.012, cy + 4);
+    g.lineTo(cx, cy - H * 0.10);
+    g.lineTo(cx + W * 0.012, cy + 4);
+    g.closePath();
+    g.fill();
+
+    // 温暖的小窗（黄色灯光）
+    for (let i = 0; i < lit.length; i++) {
+      const px = lit[i][0], py = lit[i][1];
+      const wg = g.createRadialGradient(px, py, 0, px, py, H * 0.02);
+      wg.addColorStop(0, "rgba(255, 214, 120, 0.95)");
+      wg.addColorStop(1, "rgba(255, 214, 120, 0)");
+      g.fillStyle = wg;
+      g.beginPath(); g.arc(px, py, H * 0.02, 0, Math.PI * 2); g.fill();
+      g.fillStyle = "#ffd67a";
+      g.fillRect(px - 1.5, py - 1.5, 3, 3);
+    }
+  }
+
+  function drawCypress(g, x, baseY, height) {
+    const topY = baseY - height;
+    const half = height * 0.09;
+
+    // 树干主体：下宽上窄、两侧波浪起伏
+    g.fillStyle = "#050d1a";
+    g.beginPath();
+    g.moveTo(x - height * 0.03, baseY);
+    g.quadraticCurveTo(x - half * 0.7, baseY - height * 0.5, x - half * 0.35, topY + height * 0.25);
+    for (let i = 0; i < 5; i++) {
+      const yy = topY + height * (0.65 - i * 0.13);
+      const amp = half * (0.5 + i * 0.14);
+      g.quadraticCurveTo(x - amp, yy - height * 0.04, x, yy);
+      g.quadraticCurveTo(x + amp, yy - height * 0.04, x + half * 0.35, topY + height * 0.25);
+    }
+    g.quadraticCurveTo(x + half * 0.7, baseY - height * 0.5, x + height * 0.03, baseY);
+    g.closePath();
+    g.fill();
+
+    // 火焰般的顶部尖舌
+    g.beginPath();
+    g.moveTo(x - height * 0.02, topY + height * 0.20);
+    g.quadraticCurveTo(x - height * 0.015, topY, x, topY - height * 0.06);
+    g.quadraticCurveTo(x + height * 0.015, topY, x + height * 0.02, topY + height * 0.20);
+    g.closePath();
+    g.fill();
+
+    // 树身几道起伏的笔触
+    g.strokeStyle = "#0a1c33";
+    g.lineWidth = 2;
+    for (let i = -1; i <= 1; i++) {
+      g.beginPath();
+      g.moveTo(x, baseY);
+      g.quadraticCurveTo(x + i * half * 0.5, baseY - height * 0.55, x, topY + height * 0.18);
+      g.stroke();
+    }
+  }
+
+  // ---------- 主循环 ----------
+  function animate() {
+    requestAnimationFrame(animate);
+    t += 0.02;
+
+    // 铺上静态背景
+    ctx.drawImage(bg, 0, 0, W, H);
+
+    // 运动笔触
+    ctx.lineCap = "round";
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      const [vx, vy] = flowAt(p.x, p.y);
+      const nx = p.x + vx * p.speed;
+      const ny = p.y + vy * p.speed;
+
+      // 边界：让粒子在天幕范围内循环
+      if (nx < -20 || nx > W + 20 || ny < -20 || ny > H * 0.6) {
+        p.x = Math.random() * W;
+        p.y = Math.random() * H * 0.5;
+        continue;
+      }
+
+      ctx.strokeStyle = particleColor(p.x, p.y, p.phase);
+      ctx.lineWidth = p.w;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(nx, ny);
+      ctx.stroke();
+
+      p.x = nx;
+      p.y = ny;
+    }
+
+    // 闪烁的动态星点
+    for (let i = 0; i < stars.length; i++) {
+      const s = stars[i];
+      const pulse = 0.7 + Math.sin(t * 2.2 + i * 1.7) * 0.3;
+      const rg = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 5 * pulse);
+      rg.addColorStop(0, "rgba(255, 250, 230, " + (0.9 * pulse) + ")");
+      rg.addColorStop(0.35, "rgba(246, 211, 101, " + (0.45 * pulse) + ")");
+      rg.addColorStop(1, "rgba(246, 211, 101, 0)");
+      ctx.fillStyle = rg;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r * 5 * pulse, 0, Math.PI * 2); ctx.fill();
+
+      // 星芒的十字微光
+      ctx.strokeStyle = "rgba(255, 244, 200, " + (0.35 * pulse) + ")";
+      ctx.lineWidth = 1;
+      const arm = s.r * 3.2 * pulse;
+      ctx.beginPath();
+      ctx.moveTo(s.x - arm, s.y); ctx.lineTo(s.x + arm, s.y);
+      ctx.moveTo(s.x, s.y - arm); ctx.lineTo(s.x, s.y + arm);
+      ctx.stroke();
+    }
+  }
+
+  window.addEventListener("resize", resize);
+  resize();
+  animate();
+})();
+</script>
+</body>
+</html>
