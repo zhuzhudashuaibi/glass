@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#120a1e">
+<title>南瓜夜 · 万圣节派对</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Henny+Penny&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#120a1e;
+    --ink-2:#1e1230;
+    --panel:#241538;
+    --bone:#f5ead8;
+    --bone-dim:#cdb9a6;
+    --pumpkin:#ff7a1a;
+    --pumpkin-deep:#e05512;
+    --amber:#ffb648;
+    --violet:#8a5fd6;
+    --acid:#c9f04a;
+    --blood:#c9362f;
+    --radius:18px;
+    --radius-sm:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Nunito',system-ui,sans-serif;
+    background:
+      radial-gradient(120% 80% at 50% -10%, #3a1f5e 0%, transparent 55%),
+      radial-gradient(90% 60% at 85% 110%, #2a1536 0%, transparent 60%),
+      var(--ink);
+    color:var(--bone);
+    line-height:1.55;
+    overflow-x:hidden;
+    min-height:100vh;
+  }
+  ::selection{background:var(--pumpkin);color:var(--ink)}
+
+  /* grain / texture */
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:50;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+    opacity:.12;mix-blend-mode:overlay;
+  }
+
+  .wrap{max-width:520px;margin:0 auto;padding:0 20px;position:relative;z-index:1}
+
+  /* ---------- FOG ---------- */
+  .fog{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .fog span{
+    position:absolute;bottom:-10%;width:420px;height:220px;
+    background:radial-gradient(ellipse at center, rgba(150,120,200,.16), transparent 70%);
+    filter:blur(24px);animation:drift 26s linear infinite;
+  }
+  .fog span:nth-child(1){left:-10%;animation-delay:0s}
+  .fog span:nth-child(2){left:10%;animation-delay:-11s;opacity:.7;transform:scale(.8)}
+  .fog span:nth-child(3){left:40%;animation-delay:-18s;opacity:.6;transform:scale(1.2)}
+  @keyframes drift{0%{transform:translateX(0)}50%{transform:translateX(140px)}100%{transform:translateX(0)}}
+
+  /* ---------- floating bats ---------- */
+  .bat{position:fixed;z-index:0;opacity:.5;filter:drop-shadow(0 0 6px rgba(138,95,214,.4));animation:flap 5s ease-in-out infinite}
+  .bat svg{display:block}
+  .b1{top:14%;left:8%;animation-delay:0s}
+  .b2{top:8%;right:10%;animation-delay:-2s;transform:scale(.7)}
+  .b3{top:30%;left:80%;animation-delay:-4s;transform:scale(.5)}
+  @keyframes flap{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-18px) rotate(4deg)}}
+
+  /* ---------- hero ---------- */
+  header{padding:calc(env(safe-area-inset-top,0px) + 24px) 0 8px}
+  .brand{display:flex;align-items:center;justify-content:space-between}
+  .brand .logo{font-family:'Henny Penny',cursive;font-size:22px;letter-spacing:1px;color:var(--amber);text-shadow:0 2px 0 rgba(224,85,18,.5)}
+  .tag{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--acid);border:1px solid rgba(201,240,74,.4);padding:5px 10px;border-radius:999px}
+
+  .hero{text-align:center;padding:34px 0 20px;position:relative}
+  .eyebrow{font-size:12px;font-weight:800;letter-spacing:.28em;color:var(--violet);margin-bottom:10px}
+  h1{font-family:'Henny Penny',cursive;font-size:46px;line-height:1.05;color:var(--pumpkin);text-shadow:0 3px 0 var(--pumpkin-deep),0 8px 30px rgba(255,122,26,.35);margin-bottom:14px}
+  .hero p{color:var(--bone-dim);font-size:16px;max-width:34ch;margin:0 auto 8px}
+
+  /* moon + pumpkin scene */
+  .scene{position:relative;height:190px;margin:8px 0 6px}
+  .moon{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:110px;height:110px;border-radius:50%;
+    background:radial-gradient(circle at 38% 35%, #fff6d8, #ffd98a 60%, #f2a33d);
+    box-shadow:0 0 50px rgba(255,214,120,.55),0 0 140px rgba(255,180,80,.3);
+  }
+  .moon::after{content:"";position:absolute;width:24px;height:24px;border-radius:50%;background:rgba(224,150,60,.35);top:26px;left:28px;box-shadow:18px 30px 0 -6px rgba(224,150,60,.28),44px 12px 0 -4px rgba(224,150,60,.22)}
+
+  .pumpkin{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:150px;height:130px;filter:drop-shadow(0 12px 24px rgba(0,0,0,.5))}
+  .pumpkin .body{
+    position:absolute;bottom:0;left:0;width:150px;height:112px;
+    background:radial-gradient(circle at 50% 30%, #ff9b3d, var(--pumpkin) 55%, var(--pumpkin-deep));
+    border-radius:50% 50% 46% 46%;
+  }
+  .pumpkin .lobe{position:absolute;bottom:0;width:34%;height:96px;background:var(--pumpkin-deep);border-radius:50%;opacity:.55}
+  .pumpkin .lobe.l1{left:14%}
+  .pumpkin .lobe.l2{left:48%;height:108px}
+  .pumpkin .lobe.l3{right:14%}
+  .pumpkin .stem{position:absolute;top:0;left:50%;transform:translateX(-50%);width:26px;height:34px;background:linear-gradient(#5d3b1f,#3c2413);border-radius:40% 60% 30% 30%;clip-path:polygon(30% 0,70% 0,100% 100%,0 100%)}
+  .pumpkin .eye{position:absolute;top:44px;width:13px;height:20px;background:var(--ink);border-radius:50%;box-shadow:0 0 12px var(--amber)}
+  .pumpkin .e1{left:36px}
+  .pumpkin .e2{right:36px}
+  .pumpkin .mouth{position:absolute;top:66px;left:50%;transform:translateX(-50%);width:56px;height:26px;background:var(--ink);border-radius:0 0 40% 40%;clip-path:polygon(0 0,100% 0,88% 100%,50% 74%,12% 100%)}
+
+  /* countdown */
+  .countdown{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:26px 0 30px}
+  .cd{background:var(--panel);border:1px solid rgba(138,95,214,.28);border-radius:var(--radius-sm);padding:14px 6px;text-align:center}
+  .cd b{display:block;font-size:28px;font-family:'Henny Penny',cursive;color:var(--amber);text-shadow:0 2px 0 var(--pumpkin-deep)}
+  .cd span{font-size:11px;font-weight:800;letter-spacing:.14em;color:var(--bone-dim);text-transform:uppercase}
+
+  /* buzzword ticker */
+  .ticker{overflow:hidden;white-space:nowrap;margin-bottom:34px;mask-image:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent)}
+  .ticker .in{display:inline-block;animation:scroll 16s linear infinite;font-weight:800;letter-spacing:.1em;color:var(--violet)}
+  .ticker .in span{margin:0 16px}
+  .ticker .in i{color:var(--pumpkin);font-style:normal}
+  @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+  /* ---------- section title ---------- */
+  section{padding:40px 0 8px}
+  .sec-label{font-size:12px;font-weight:800;letter-spacing:.3em;color:var(--acid);margin-bottom:6px}
+  h2{font-family:'Henny Penny',cursive;font-size:30px;color:var(--bone);line-height:1.1;margin-bottom:20px}
+
+  /* activities */
+  .cards{display:flex;flex-direction:column;gap:14px}
+  .card{position:relative;background:linear-gradient(180deg,var(--panel),#1c0f2e);border:1px solid rgba(138,95,214,.24);border-radius:var(--radius);padding:18px;overflow:hidden}
+  .card .emoji{font-size:30px;margin-bottom:8px}
+  .card h3{font-size:18px;font-weight:800;margin-bottom:4px}
+  .card p{font-size:14px;color:var(--bone-dim)}
+  .card .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+  .pill{font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 10px;border-radius:999px;border:1px solid rgba(205,185,166,.25);color:var(--bone-dim)}
+  .pill.hot{border-color:var(--pumpkin);color:var(--pumpkin)}
+  .card::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(255,122,26,.15),transparent 70%)}
+
+  /* map */
+  .map{background:var(--panel);border:1px solid rgba(138,95,214,.24);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden}
+  .map .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(138,95,214,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(138,95,214,.12) 1px,transparent 1px);background-size:26px 26px;mask-image:radial-gradient(circle at 50% 40%,#000,transparent 75%)}
+  .map .pin{position:relative;z-index:1}
+  .map .row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid rgba(205,185,166,.1)}
+  .map .row:last-child{border-bottom:0}
+  .map .dot{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:19px;background:rgba(138,95,214,.14);flex:0 0 40px}
+  .map .row b{display:block;font-size:15px}
+  .map .row small{color:var(--bone-dim);font-size:12px}
+  .map .note{margin-top:14px;font-size:12px;color:var(--bone-dim);background:rgba(0,0,0,.2);padding:10px 12px;border-radius:var(--radius-sm)}
+
+  /* tickets */
+  .tickets{display:flex;flex-direction:column;gap:14px}
+  .tk{background:var(--ink-2);border:1px solid rgba(138,95,214,.24);border-radius:var(--radius);padding:18px;position:relative}
+  .tk.vip{border-color:var(--pumpkin);background:linear-gradient(180deg,#2b1633,#1c0f2e)}
+  .tk .top{display:flex;justify-content:space-between;align-items:baseline}
+  .tk h3{font-size:17px;font-weight:800}
+  .tk .price{font-family:'Henny Penny',cursive;font-size:24px;color:var(--amber)}
+  .tk ul{list-style:none;margin:10px 0 16px}
+  .tk li{font-size:13px;color:var(--bone-dim);padding:4px 0 4px 22px;position:relative}
+  .tk li::before{content:"🕸";position:absolute;left:0;top:4px;font-size:11px;opacity:.7}
+  .tk.vip li::before{content:"🎃"}
+
+  .btn{display:block;text-align:center;text-decoration:none;font-weight:800;letter-spacing:.04em;padding:15px 20px;border-radius:14px;color:var(--ink);background:linear-gradient(135deg,var(--amber),var(--pumpkin));box-shadow:0 8px 22px rgba(255,122,26,.32);transition:transform .12s ease,box-shadow .12s ease}
+  .btn:active{transform:translateY(2px) scale(.99);box-shadow:0 4px 12px rgba(255,122,26,.3)}
+  .btn.ghost{background:transparent;color:var(--bone);border:1px solid rgba(205,185,166,.35);box-shadow:none}
+  .btn.vip{background:linear-gradient(135deg,#ff7ad9,#a34cf0);box-shadow:0 8px 22px rgba(163,76,240,.32)}
+
+  /* FAQ */
+  .faq details{background:var(--panel);border:1px solid rgba(138,95,214,.24);border-radius:var(--radius-sm);margin-bottom:10px;overflow:hidden}
+  .faq summary{list-style:none;padding:16px 18px;font-weight:800;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:15px}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:"+";font-size:20px;color:var(--pumpkin);font-weight:400;transition:transform .2s}
+  .faq details[open] summary::after{transform:rotate(45deg)}
+  .faq .a{padding:0 18px 16px;color:var(--bone-dim);font-size:14px}
+
+  footer{text-align:center;padding:44px 0 30px;color:var(--bone-dim);font-size:13px}
+  footer .social{display:flex;gap:14px;justify-content:center;margin-bottom:16px}
+  footer .social a{width:42px;height:42px;border-radius:50%;border:1px solid rgba(138,95,214,.3);display:grid;place-items:center;font-size:18px;text-decoration:none}
+
+  /* sticky CTA */
+  .sticky{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:12px 16px calc(env(safe-area-inset-bottom,0px) + 12px);background:linear-gradient(0deg,var(--ink) 60%,transparent);display:none}
+  .sticky .btn{width:100%}
+  .sticky.show{display:block}
+
+  @media (min-width:560px){
+    .cards{flex-direction:row;flex-wrap:wrap}
+    .card{flex:1 1 46%}
+    .tickets{flex-direction:row}
+    .tk{flex:1}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important;scroll-behavior:auto!important}
+  }
+</style>
+</head>
+<body>
+<div class="fog"><span></span><span></span><span></span></div>
+
+<div class="bat b1"><svg width="34" height="20" viewBox="0 0 34 20"><path d="M0 20 Q4 14 10 10 Q6 6 8 0 Q12 6 17 9 Q22 6 26 0 Q28 6 24 10 Q30 14 34 20 Q26 17 17 16 Q8 17 0 20Z" fill="#8a5fd6"/></svg></div>
+<div class="bat b2"><svg width="26" height="16" viewBox="0 0 34 20"><path d="M0 20 Q4 14 10 10 Q6 6 8 0 Q12 6 17 9 Q22 6 26 0 Q28 6 24 10 Q30 14 34 20 Q26 17 17 16 Q8 17 0 20Z" fill="#8a5fd6"/></svg></div>
+<div class="bat b3"><svg width="20" height="12" viewBox="0 0 34 20"><path d="M0 20 Q4 14 10 10 Q6 6 8 0 Q12 6 17 9 Q22 6 26 0 Q28 6 24 10 Q30 14 34 20 Q26 17 17 16 Q8 17 0 20Z" fill="#8a5fd6"/></svg></div>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <span class="logo">南瓜夜</span>
+      <span class="tag">10.31 夜</span>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="eyebrow">· 一年只此一夜 ·</div>
+    <h1>万圣节<br>午夜派对</h1>
+    <p>糖、南瓜与雾气。带上你的鬼脸，在天亮之前，我们不见不散。</p>
+    <div class="scene">
+      <div class="moon"></div>
+      <div class="pumpkin">
+        <div class="stem"></div>
+        <div class="lobe l1"></div><div class="lobe l2"></div><div class="lobe l3"></div>
+        <div class="body"></div>
+        <div class="eye e1"></div><div class="eye e2"></div>
+        <div class="mouth"></div>
+      </div>
+    </div>
+    <div class="countdown">
+      <div class="cd"><b id="d">00</b><span>天</span></div>
+      <div class="cd"><b id="h">00</b><span>时</span></div>
+      <div class="cd"><b id="m">00</b><span>分</span></div>
+      <div class="cd"><b id="s">00</b><span>秒</span></div>
+    </div>
+    <div class="ticker"><div class="in" id="ticker">
+      <span>不 给 糖 就 捣 蛋</span><i>🎃</i><span>鬼 屋 冒 险</span><i>🦇</i><span>化 妆 舞 会</span><i>👻</i><span>南 瓜 灯 大 赛</span><i>🕸</i>
+    </div></div>
+    <a href="#tickets" class="btn">立刻抢早鸟票 →</a>
+  </section>
+
+  <section id="events">
+    <div class="sec-label">LINEUP</div>
+    <h2>今夜玩什么</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="emoji">👻</div>
+        <h3>迷雾鬼屋</h3>
+        <p>三层废弃老宅，18+ 挑战胆量。请勿单独进入。</p>
+        <div class="meta"><span class="pill hot">刺激 · 18+</span><span class="pill">排队约 40 分</span></div>
+      </div>
+      <div class="card">
+        <div class="emoji">🎃</div>
+        <h3>南瓜灯工坊</h3>
+        <p>亲手雕刻你的南瓜灯，成品可带走，适合全家。</p>
+        <div class="meta"><span class="pill">全年龄</span><span class="pill">材料免费</span></div>
+      </div>
+      <div class="card">
+        <div class="emoji">🕺</div>
+        <h3>午夜化妆舞会</h3>
+        <p>DJ 现场打碟，最佳装扮可赢千元大奖。</p>
+        <div class="meta"><span class="pill hot">有抽奖</span><span class="pill">22:00 开演</span></div>
+      </div>
+      <div class="card">
+        <div class="emoji">🍬</div>
+        <h3>不给糖就捣蛋</h3>
+        <p>园区巡游讨糖，12 岁以下儿童专区，家长陪同。</p>
+        <div class="meta"><span class="pill">儿童</span><span class="pill">每 30 分一轮</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="map">
+    <div class="sec-label">GET HERE</div>
+    <h2>怎么来这儿</h2>
+    <div class="map">
+      <div class="grid"></div>
+      <div class="pin">
+        <div class="row"><span class="dot">📍</span><div><b>南瓜谷主题园</b><small>幸福路 888 号 · 北门入场</small></div></div>
+        <div class="row"><span class="dot">🚗</span><div><b>自驾停车</b><small>东区停车场限时免费，导航「南瓜谷」</small></div></div>
+        <div class="row"><span class="dot">🚌</span><div><b>接驳巴士</b><small>18:00–24:00，地铁站 2 号口滚动发车</small></div></div>
+        <div class="row"><span class="dot">🌧</span><div><b>天气预案</b><small>下雨取消户外秀，室内活动照常</small></div></div>
+      </div>
+      <div class="note">🎃 着装入园可享 9 折票，禁止携带仿真武器与尖锐道具。</div>
+    </div>
+  </section>
+
+  <section id="tickets">
+    <div class="sec-label">TICKETS</div>
+    <h2>票已开售</h2>
+    <div class="tickets">
+      <div class="tk">
+        <div class="top"><h3>成人票</h3><span class="price">¥128</span></div>
+        <ul><li>全园区通玩</li><li>免费停车</li><li>含一杯南瓜特饮</li></ul>
+        <a href="#" class="btn ghost">购买早鸟 ¥98</a>
+      </div>
+      <div class="tk vip">
+        <div class="top"><h3>VIP 夜票</h3><span class="price">¥268</span></div>
+        <ul><li>免排队通道</li><li>贵宾休息区</li><li>限量纪念南瓜灯</li></ul>
+        <a href="#" class="btn vip">立刻抢 VIP</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="sec-label">FAQ</div>
+    <h2>先说清楚</h2>
+    <div class="faq">
+      <details><summary>几点开始？几点结束？</summary><div class="a">10 月 31 日 18:00 开放入场，24:00 闭园。午夜舞会 22:00 开演。</div></details>
+      <details><summary>多大的孩子能来？</summary><div class="a">全年龄可入园，但鬼屋仅限 18 岁以上。12 岁以下须由成年监护人陪同。</div></details>
+      <details><summary>可以穿什么来？</summary><div class="a">欢迎任何装扮！但禁止仿真武器、尖锐道具以及可能遮挡他人的大型扮装。</div></details>
+      <details><summary>票能退吗？</summary><div class="a">开场前 48 小时可全额退票；因天气取消户外活动时，其余活动不受影响，不支持整体退款。</div></details>
+    </div>
+  </section>
+
+  <footer>
+    <div class="social"><a href="#">📷</a><a href="#">🎵</a><a href="#">✉️</a></div>
+    <p>南瓜夜 · 万圣节派对</p>
+    <p style="margin-top:6px;font-size:12px">© 2026 主题园 · 一切解释权归主办方</p>
+  </footer>
+</div>
+
+<div class="sticky" id="stickyCTA">
+  <a href="#tickets" class="btn">🎃 抢早鸟票</a>
+</div>
+
+<script>
+  // countdown to Oct 31
+  (function(){
+    var target = new Date();
+    target.setMonth(9, 31); // Oct 31
+    target.setHours(18,0,0,0);
+    if(target < new Date()) target.setFullYear(target.getFullYear()+1);
+    function pad(n){return (n<10?'0':'')+n}
+    function tick(){
+      var diff = target - new Date();
+      var d = Math.floor(diff/86400000);
+      var h = Math.floor(diff/3600000)%24;
+      var m = Math.floor(diff/60000)%60;
+      var s = Math.floor(diff/1000)%60;
+      document.getElementById('d').textContent = pad(d);
+      document.getElementById('h').textContent = pad(h);
+      document.getElementById('m').textContent = pad(m);
+      document.getElementById('s').textContent = pad(s);
+    }
+    tick(); setInterval(tick,1000);
+  })();
+
+  // duplicated ticker content for seamless loop
+  (function(){
+    var el = document.getElementById('ticker');
+    el.innerHTML += el.innerHTML;
+  })();
+
+  // sticky CTA appears after scrolling past hero
+  (function(){
+    var cta = document.getElementById('stickyCTA');
+    var threshold = 480;
+    function onScroll(){
+      if(window.scrollY > threshold) cta.classList.add('show');
+      else cta.classList.remove('show');
+    }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    onScroll();
+  })();
+</script>
+</body>
+</html>
