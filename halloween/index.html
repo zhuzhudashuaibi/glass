@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b0712">
+<title>万圣夜集市 · 不给糖就捣蛋</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0b0712;
+  --ink-2:#140c20;
+  --ink-3:#1e122f;
+  --cream:#f7ecd4;
+  --cream-dim:#cbbfa6;
+  --pumpkin:#ff8a3d;
+  --pumpkin-hot:#ff5e1a;
+  --ghost:#8ef7c0;
+  --violet:#a56bff;
+  --blood:#e8455a;
+  --glow-orange:0 0 24px rgba(255,138,61,.45);
+  --glow-green:0 0 22px rgba(142,247,192,.4);
+  --glow-violet:0 0 22px rgba(165,107,255,.45);
+  --radius:22px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+
+html,body{height:100%;}
+
+body{
+  font-family:"ZCOOL KuaiLe","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--ink);
+  color:var(--cream);
+  overflow-x:hidden;
+  position:relative;
+  min-height:100dvh;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ===== Atmosphere background ===== */
+.atmos{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  overflow:hidden;
+}
+.atmos .sky{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(120% 60% at 50% -10%, #2a1745 0%, transparent 55%),
+    radial-gradient(80% 40% at 15% 110%, #34104a 0%, transparent 60%),
+    radial-gradient(90% 45% at 88% 108%, #1f0d36 0%, transparent 60%),
+    linear-gradient(180deg,#0e0818 0%,#0b0712 60%,#07030c 100%);
+}
+.atmos .moon{
+  position:absolute;
+  top:9%;right:10%;
+  width:76px;height:76px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #fff6d8 0%, #f6d587 45%, #e8b95f 70%, #d9a54a 100%);
+  box-shadow:0 0 60px 18px rgba(246,213,135,.35);
+  opacity:.95;
+}
+.atmos .moon::after{
+  content:"";
+  position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 65% 70%, #b98a3e 0%, transparent 40%);
+  opacity:.5;
+}
+.bat{
+  position:absolute;
+  font-size:22px;
+  opacity:.7;
+  animation:fly linear infinite;
+  will-change:transform;
+}
+@keyframes fly{
+  0%{transform:translate(0,0) rotate(0deg);}
+  25%{transform:translate(-18px,-14px) rotate(-8deg);}
+  50%{transform:translate(6px,-6px) rotate(5deg);}
+  75%{transform:translate(18px,10px) rotate(-5deg);}
+  100%{transform:translate(0,0) rotate(0deg);}
+}
+.fog{
+  position:absolute;
+  left:-20%;
+  width:140%;
+  height:38%;
+  background:radial-gradient(closest-side, rgba(120,90,160,.16), transparent 70%);
+  filter:blur(2px);
+  animation:drift 22s ease-in-out infinite;
+  border-radius:50%;
+}
+.fog.f2{top:34%;animation-delay:-8s;opacity:.7;}
+.fog.f3{top:62%;animation-delay:-14s;opacity:.5;}
+@keyframes drift{
+  0%,100%{transform:translateX(-4%);}
+  50%{transform:translateX(4%);}
+}
+.grain{
+  position:absolute;inset:0;
+  opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ===== App shell ===== */
+.app{
+  position:relative;
+  z-index:1;
+  max-width:460px;
+  margin:0 auto;
+  padding:calc(env(safe-area-inset-top) + 22px) 20px calc(env(safe-area-inset-bottom) + 40px);
+  min-height:100dvh;
+}
+
+.screen{display:none;}
+.screen.active{display:block;animation:screenIn .45s cubic-bezier(.2,.7,.2,1);}
+@keyframes screenIn{
+  from{opacity:0;transform:translateY(16px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* ===== Top bar ===== */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:26px;
+}
+.brand{display:flex;flex-direction:column;gap:2px;}
+.brand .en{
+  font-family:"Creepster",cursive;
+  font-size:15px;
+  letter-spacing:1.5px;
+  color:var(--pumpkin);
+  text-shadow:var(--glow-orange);
+}
+.brand .cn{font-size:13px;color:var(--cream-dim);letter-spacing:2px;}
+
+.btn{
+  font-family:inherit;
+  border:none;cursor:pointer;
+  color:var(--cream);
+  display:inline-flex;align-items:center;gap:8px;
+  border-radius:14px;
+  transition:transform .15s ease, box-shadow .2s ease;
+}
+.btn:active{transform:scale(.94);}
+.btn-icon{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  width:44px;height:44px;
+  justify-content:center;font-size:20px;
+  backdrop-filter:blur(6px);
+}
+
+/* ===== Hero ===== */
+.hero{
+  text-align:center;
+  padding:18px 0 30px;
+  position:relative;
+}
+.hero .pumpkin-big{
+  font-size:64px;
+  display:inline-block;
+  animation:bob 3.2s ease-in-out infinite;
+  filter:drop-shadow(0 8px 18px rgba(255,110,30,.35));
+}
+@keyframes bob{
+  0%,100%{transform:translateY(0) rotate(-4deg);}
+  50%{transform:translateY(-10px) rotate(4deg);}
+}
+.hero h1{
+  font-family:"Creepster",cursive;
+  font-size:clamp(44px,14vw,60px);
+  letter-spacing:2px;
+  line-height:.95;
+  margin:6px 0 4px;
+  background:linear-gradient(180deg,#ffd9a0 0%,#ff8a3d 55%,#ff5e1a 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 3px 0 #3a1400) drop-shadow(0 8px 22px rgba(255,120,30,.35));
+}
+.hero .sub{
+  font-size:16px;color:var(--cream-dim);
+  letter-spacing:3px;
+}
+.hero .rule{
+  margin-top:18px;
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:13px;color:#e7c58a;
+  background:rgba(255,138,61,.1);
+  border:1px dashed rgba(255,138,61,.35);
+  padding:8px 14px;border-radius:999px;
+}
+
+/* ===== Game cards ===== */
+.games{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.card{
+  position:relative;
+  border:none;cursor:pointer;
+  font-family:inherit;color:var(--cream);
+  text-align:left;
+  padding:18px 16px;
+  border-radius:var(--radius);
+  background:linear-gradient(160deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.1);
+  backdrop-filter:blur(8px);
+  overflow:hidden;
+  transition:transform .2s ease, box-shadow .25s ease, border-color .25s;
+}
+.card:active{transform:scale(.96);}
+.card .icon{
+  font-size:40px;
+  display:block;
+  margin-bottom:12px;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,.4));
+  transition:transform .3s ease;
+}
+.card:hover .icon{transform:translateY(-4px) scale(1.08) rotate(-6deg);}
+.card .name{
+  font-size:19px;letter-spacing:1px;
+}
+.card .desc{
+  font-size:12px;color:var(--cream-dim);
+  margin-top:4px;letter-spacing:.5px;
+}
+.card .badge{
+  position:absolute;top:12px;right:12px;
+  font-size:10px;letter-spacing:1px;
+  padding:3px 8px;border-radius:999px;
+  background:rgba(0,0,0,.35);
+  color:#ffd9a0;
+}
+/* per-card accent */
+.card.c1{border-color:rgba(142,247,192,.25);box-shadow:0 6px 26px -12px rgba(142,247,192,.5);}
+.card.c2{border-color:rgba(255,138,61,.28);box-shadow:0 6px 26px -12px rgba(255,138,61,.5);}
+.card.c3{border-color:rgba(165,107,255,.28);box-shadow:0 6px 26px -12px rgba(165,107,255,.5);}
+.card.c4{border-color:rgba(232,69,90,.28);box-shadow:0 6px 26px -12px rgba(232,69,90,.5);}
+
+.footer-note{
+  text-align:center;margin-top:30px;
+  font-size:12px;color:rgba(203,191,166,.5);
+  letter-spacing:1px;
+}
+
+/* ===== Game screens shared ===== */
+.screen-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;
+}
+.screen-head h2{
+  font-family:"Creepster",cursive;
+  font-size:34px;letter-spacing:1.5px;
+  background:linear-gradient(180deg,#ffd9a0,#ff8a3d);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.hud{
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+}
+.pill{
+  background:rgba(0,0,0,.4);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  padding:7px 13px;
+  font-size:15px;
+  display:flex;align-items:center;gap:6px;
+  letter-spacing:.5px;
+}
+.pill b{color:var(--pumpkin);font-size:18px;}
+
+.game-stage{
+  border-radius:var(--radius);
+  background:linear-gradient(160deg, rgba(255,255,255,.05), rgba(255,255,255,.01));
+  border:1px solid rgba(255,255,255,.09);
+  padding:18px;
+  position:relative;
+  overflow:hidden;
+}
+
+/* Start overlay */
+.overlay{
+  position:absolute;inset:0;
+  background:rgba(7,3,12,.82);
+  backdrop-filter:blur(4px);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:16px;
+  text-align:center;
+  padding:24px;
+  z-index:20;
+  border-radius:var(--radius);
+}
+.overlay .big{font-size:52px;filter:drop-shadow(0 6px 16px rgba(0,0,0,.5));animation:bob 2.6s ease-in-out infinite;}
+.overlay h3{font-size:24px;letter-spacing:2px;}
+.overlay p{font-size:14px;color:var(--cream-dim);line-height:1.7;max-width:260px;}
+.btn-primary{
+  background:linear-gradient(180deg,#ffa05a,#ff6a1f);
+  color:#2a0e00;
+  font-size:19px;
+  font-weight:bold;
+  padding:14px 34px;
+  border-radius:16px;
+  box-shadow:0 8px 22px -6px rgba(255,106,31,.6), inset 0 1px 0 rgba(255,255,255,.4);
+  letter-spacing:2px;
+}
+.btn-primary:active{transform:scale(.94);}
+
+/* ===== Game 1: Whack-a-ghost ===== */
+.whack-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  justify-items:center;
+  padding:8px 0;
+}
+.hole{
+  width:min(24vw,92px);height:min(21vw,80px);
+  position:relative;
+  display:flex;align-items:flex-end;justify-content:center;
+  cursor:pointer;
+  -webkit-user-select:none;user-select:none;
+}
+.hole .pit{
+  position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;height:60%;
+  background:radial-gradient(closest-side, #000 0%, #1c1028 70%, transparent 100%);
+  border-radius:50%;
+  box-shadow:inset 0 6px 10px rgba(0,0,0,.9);
+}
+.hole .ghost{
+  position:relative;
+  font-size:44px;
+  z-index:2;
+  transform:translateY(120%);
+  transition:transform .16s cubic-bezier(.2,.9,.3,1.3);
+  filter:drop-shadow(0 0 10px rgba(142,247,192,.5));
+}
+.hole.up .ghost{transform:translateY(8%);}
+.hole .ghost.hit{
+  animation:pop .28s ease forwards;
+}
+@keyframes pop{
+  0%{transform:translateY(8%) scale(1);}
+  40%{transform:translateY(10%) scale(1.35);opacity:.4;}
+  100%{transform:translateY(140%) scale(.6);opacity:0;}
+}
+.hole .fx{
+  position:absolute;top:-2px;left:50%;transform:translateX(-50%);
+  font-size:22px;z-index:3;pointer-events:none;
+  animation:fxup .6s ease forwards;
+  opacity:0;
+}
+@keyframes fxup{
+  0%{opacity:1;transform:translate(-50%,0) scale(.6);}
+  100%{opacity:0;transform:translate(-50%,-34px) scale(1.3);}
+}
+
+/* ===== Game 2: Candy catch ===== */
+.catch-stage{
+  position:relative;
+  height:min(58vh,460px);
+  overflow:hidden;
+  border-radius:16px;
+  background:radial-gradient(80% 50% at 50% 0%, #291740 0%, #120b1e 70%);
+  touch-action:none;
+}
+.catch-stage::after{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg, transparent 0 34px, rgba(255,255,255,.025) 34px 35px);
+}
+.falling{
+  position:absolute;
+  top:-50px;
+  z-index:2;
+  font-size:30px;
+  will-change:transform,top;
+}
+.falling.bomb{font-size:32px;}
+.basket{
+  position:absolute;
+  bottom:12px;left:50%;
+  transform:translateX(-50%);
+  width:76px;height:46px;
+  z-index:3;
+  transition:left .08s linear;
+}
+.basket .b{
+  font-size:40px;line-height:1;
+  display:block;text-align:center;
+  filter:drop-shadow(0 6px 8px rgba(0,0,0,.5));
+}
+.basket .tongue{
+  width:82px;height:4px;
+  margin:-2px auto 0;
+  background:linear-gradient(90deg,var(--pumpkin),#c46a2a,var(--pumpkin));
+  border-radius:999px;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);
+}
+
+/* ===== Game 3: Memory ===== */
+.mem-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  perspective:800px;
+}
+.mem-card{
+  aspect-ratio:3/4;
+  position:relative;
+  cursor:pointer;
+  -webkit-user-select:none;user-select:none;
+}
+.mem-card .face{
+  position:absolute;inset:0;
+  border-radius:14px;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;
+  transition:transform .5s cubic-bezier(.2,.8,.3,1);
+}
+.mem-card .back{
+  background:linear-gradient(160deg,#2a1745,#1a0f2e);
+  border:1px solid rgba(165,107,255,.4);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
+}
+.mem-card .back::after{
+  content:"🎃";font-size:16px;opacity:.35;
+}
+.mem-card .front{
+  background:linear-gradient(160deg,#fff7e6,#ffe0b0);
+  transform:rotateY(180deg);
+  box-shadow:0 4px 14px rgba(0,0,0,.4);
+}
+.mem-card.flipped .back{transform:rotateY(180deg);}
+.mem-card.flipped .front{transform:rotateY(0deg);}
+.mem-card.matched .front{
+  box-shadow:0 0 16px 4px rgba(142,247,192,.6);
+  animation:matchpulse .5s ease;
+}
+@keyframes matchpulse{
+  0%{transform:rotateY(0) scale(1);}
+  50%{transform:rotateY(0) scale(1.15);}
+  100%{transform:rotateY(0) scale(1);}
+}
+
+/* ===== Game 4: Quiz ===== */
+.quiz-q{
+  font-size:19px;line-height:1.6;
+  margin:6px 0 18px;
+  letter-spacing:.5px;
+}
+.quiz-q .emoji{font-size:30px;display:block;margin-bottom:10px;}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;}
+.quiz-opt{
+  text-align:left;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  padding:14px 16px;
+  font-size:16px;
+  transition:all .2s ease;
+  color:var(--cream);
+}
+.quiz-opt:active{transform:scale(.97);}
+.quiz-opt.correct{
+  background:rgba(142,247,192,.18);
+  border-color:var(--ghost);
+  color:var(--ghost);
+}
+.quiz-opt.wrong{
+  background:rgba(232,69,90,.18);
+  border-color:var(--blood);
+  color:#ff9aa8;
+}
+.quiz-progress{
+  height:6px;background:rgba(255,255,255,.08);
+  border-radius:999px;overflow:hidden;margin-bottom:18px;
+}
+.quiz-progress span{
+  display:block;height:100%;
+  background:linear-gradient(90deg,#ff8a3d,#a56bff);
+  border-radius:999px;transition:width .4s ease;
+}
+
+.toast{
+  position:fixed;left:50%;top:20%;
+  transform:translateX(-50%) translateY(-20px);
+  background:rgba(20,12,32,.9);
+  border:1px solid rgba(165,107,255,.4);
+  color:var(--cream);
+  padding:12px 22px;border-radius:14px;
+  font-size:16px;letter-spacing:1px;
+  opacity:0;pointer-events:none;
+  z-index:50;
+  transition:all .3s ease;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media (max-width:340px){
+  .card .name{font-size:16px;}
+  .hero h1{font-size:40px;}
+}
+</style>
+</head>
+<body>
+
+<!-- Atmosphere -->
+<div class="atmos">
+  <div class="sky"></div>
+  <div class="moon"></div>
+  <div class="fog"></div>
+  <div class="fog f2"></div>
+  <div class="fog f3"></div>
+  <div class="bat" style="top:16%;left:8%;animation-duration:9s;">🦇</div>
+  <div class="bat" style="top:26%;left:60%;animation-duration:11s;font-size:18px;">🦇</div>
+  <div class="bat" style="top:7%;left:38%;animation-duration:13s;font-size:16px;">🦇</div>
+  <div class="grain"></div>
+</div>
+
+<div class="app">
+
+  <!-- ============ HOME ============ -->
+  <section class="screen active" id="screen-home">
+    <div class="topbar">
+      <div class="brand">
+        <span class="en">SPOOKY MARKET</span>
+        <span class="cn">万圣夜集市</span>
+      </div>
+    </div>
+
+    <div class="hero">
+      <span class="pumpkin-big">🎃</span>
+      <h1>TRICK<br>OR TREAT</h1>
+      <div class="sub">不给糖 · 就捣蛋</div>
+      <div class="rule">👇 挑一个小游戏，开始你的万圣夜</div>
+    </div>
+
+    <div class="games">
+      <button class="card c1" data-game="whack">
+        <span class="badge">手速</span>
+        <span class="icon">👻</span>
+        <div class="name">打幽灵</div>
+        <div class="desc">幽灵冒头就敲它！</div>
+      </button>
+      <button class="card c2" data-game="catch">
+        <span class="badge">反应</span>
+        <span class="icon">🍬</span>
+        <div class="name">接糖果</div>
+        <div class="desc">接糖果，躲炸弹</div>
+      </button>
+      <button class="card c3" data-game="memory">
+        <span class="badge">记忆</span>
+        <span class="icon">🧠</span>
+        <div class="name">万圣翻牌</div>
+        <div class="desc">找出相同的小怪物</div>
+      </button>
+      <button class="card c4" data-game="quiz">
+        <span class="badge">知识</span>
+        <span class="icon">🕯️</span>
+        <div class="name">万圣问答</div>
+        <div class="desc">你是万圣老手吗？</div>
+      </button>
+    </div>
+
+    <div class="footer-note">— 今夜，鬼怪出没 —</div>
+  </section>
+
+  <!-- ============ WHACK ============ -->
+  <section class="screen" id="screen-whack">
+    <div class="screen-head">
+      <button class="btn btn-icon" data-back>←</button>
+      <h2>打幽灵</h2>
+      <div style="width:44px"></div>
+    </div>
+    <div class="hud">
+      <div class="pill">得分 <b id="whack-score">0</b></div>
+      <div class="pill">⏱ <b id="whack-time">30</b></div>
+    </div>
+    <div class="game-stage" id="whack-stage">
+      <div class="whack-grid" id="whack-grid"></div>
+      <div class="overlay" id="whack-overlay">
+        <span class="big">👻</span>
+        <h3>敲敲幽灵</h3>
+        <p>30 秒内，幽灵会从洞里冒头，看准就敲！敲到 +10 分。</p>
+        <button class="btn btn-primary" data-start="whack">开始游戏</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CATCH ============ -->
+  <section class="screen" id="screen-catch">
+    <div class="screen-head">
+      <button class="btn btn-icon" data-back>←</button>
+      <h2>接糖果</h2>
+      <div style="width:44px"></div>
+    </div>
+    <div class="hud">
+      <div class="pill">得分 <b id="catch-score">0</b></div>
+      <div class="pill">⏱ <b id="catch-time">30</b></div>
+    </div>
+    <div class="game-stage" id="catch-stage-wrap">
+      <div class="catch-stage" id="catch-stage">
+        <div class="basket" id="basket"><span class="b">🧺</span><div class="tongue"></div></div>
+        <div class="overlay" id="catch-overlay">
+          <span class="big">🍬</span>
+          <h3>接住糖果</h3>
+          <p>左右移动，接住落下的糖果 +10 分；小心 💣 炸弹会 -15 分！</p>
+          <button class="btn btn-primary" data-start="catch">开始游戏</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MEMORY ============ -->
+  <section class="screen" id="screen-memory">
+    <div class="screen-head">
+      <button class="btn btn-icon" data-back>←</button>
+      <h2>万圣翻牌</h2>
+      <div style="width:44px"></div>
+    </div>
+    <div class="hud">
+      <div class="pill">步数 <b id="mem-moves">0</b></div>
+      <div class="pill">配对 <b id="mem-pairs">0</b>/6</div>
+    </div>
+    <div class="game-stage">
+      <div class="mem-grid" id="mem-grid"></div>
+      <div class="overlay" id="mem-overlay">
+        <span class="big">🧠</span>
+        <h3>找出相同小怪物</h3>
+        <p>翻开卡牌，记住位置，两两配对。用最少步数完成！</p>
+        <button class="btn btn-primary" data-start="memory">开始游戏</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="screen" id="screen-quiz">
+    <div class="screen-head">
+      <button class="btn btn-icon" data-back>←</button>
+      <h2>万圣问答</h2>
+      <div style="width:44px"></div>
+    </div>
+    <div class="hud">
+      <div class="pill">得分 <b id="quiz-score">0</b></div>
+    </div>
+    <div class="game-stage">
+      <div class="quiz-progress"><span id="quiz-bar" style="width:0%"></span></div>
+      <div class="quiz-q" id="quiz-q"></div>
+      <div class="quiz-opts" id="quiz-opts"></div>
+      <div class="overlay" id="quiz-overlay">
+        <span class="big">🕯️</span>
+        <h3>万圣知识大挑战</h3>
+        <p>5 道关于万圣节的趣味题目，答对 +20 分，看看你的实力！</p>
+        <button class="btn btn-primary" data-start="quiz">开始游戏</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Sound (WebAudio, no assets) ---------- */
+  var audioCtx = null;
+  function beep(freq, dur, type, vol){
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      var o = audioCtx.createOscillator();
+      var g = audioCtx.createGain();
+      o.type = type || "sine";
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(vol||0.12, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dur);
+    }catch(e){}
+  }
+  function sPop(){ beep(600,0.08,"square",0.1); beep(900,0.1,"sine",0.1); }
+  function sHit(){ beep(300,0.12,"square",0.12); beep(150,0.15,"sawtooth",0.1); }
+  function sGood(){ beep(660,0.1,"sine",0.12); setTimeout(function(){beep(880,0.12,"sine",0.12);},80); }
+  function sBad(){ beep(180,0.2,"sawtooth",0.12); }
+  function sFlip(){ beep(520,0.06,"triangle",0.08); }
+  function sWin(){ [523,659,784,1046].forEach(function(f,i){setTimeout(function(){beep(f,0.16,"triangle",0.12);}, i*110); }); }
+
+  /* ---------- Navigation ---------- */
+  function showScreen(id){
+    document.querySelectorAll(".screen").forEach(function(s){ s.classList.remove("active"); });
+    document.getElementById("screen-"+id).classList.add("active");
+    window.scrollTo(0,0);
+  }
+  document.querySelectorAll("[data-game]").forEach(function(btn){
+    btn.addEventListener("click", function(){ showScreen(btn.dataset.game); });
+  });
+  document.querySelectorAll("[data-back]").forEach(function(b){
+    b.addEventListener("click", function(){ showScreen("home"); });
+  });
+
+  var toastTimer;
+  function toast(msg){
+    var t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove("show"); }, 1600);
+  }
+
+  /* ---------- Generic start hook ---------- */
+  document.querySelectorAll("[data-start]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var g = btn.dataset.start;
+      var overlays = {whack:"whack-overlay", catch:"catch-overlay", memory:"mem-overlay", quiz:"quiz-overlay"};
+      document.getElementById(overlays[g]).style.display = "none";
+      if(g === "whack") startWhack();
+      else if(g === "catch") startCatch();
+      else if(g === "memory") resetMemory();
+      else if(g === "quiz") resetQuiz();
+    });
+  });
+
+  /* ================= WHACK A GHOST ================= */
+  var WHACK_TIME = 30;
+  var whackTimers = [], whackScore = 0, whackRunning = false, whackLoop, whackCount;
+  function buildWhack(){
+    var grid = document.getElementById("whack-grid");
+    grid.innerHTML = "";
+    for(var i=0;i<9;i++){
+      var h = document.createElement("div");
+      h.className = "hole";
+      h.innerHTML = '<span class="pit"></span><span class="ghost">👻</span><span class="fx">✦</span>';
+      (function(hole){
+        hole.addEventListener("pointerdown", function(){
+          if(!whackRunning || !hole.classList.contains("up")) return;
+          var ghost = hole.querySelector(".ghost");
+          var fx = hole.querySelector(".fx");
+          hole.classList.remove("up");
+          whackScore += 10;
+          document.getElementById("whack-score").textContent = whackScore;
+          ghost.classList.add("hit");
+          fx.textContent = ["✦","💥","🎃","⭐"][Math.floor(Math.random()*4)];
+          fx.style.animation = "none"; void fx.offsetWidth; fx.style.animation = "";
+          sHit();
+          setTimeout(function(){ ghost.classList.remove("hit"); }, 300);
+        });
+      })(h);
+      grid.appendChild(h);
+    }
+  }
+  function whackPop(){
+    var holes = document.querySelectorAll("#whack-grid .hole");
+    for(var i=0;i<holes.length;i++) holes[i].classList.remove("up");
+    var idx = Math.floor(Math.random()*holes.length);
+    holes[idx].classList.add("up");
+    whackTimers.push(setTimeout(function(){ holes[idx].classList.remove("up"); }, 700));
+    sPop();
+  }
+  function startWhack(){
+    whackScore = 0;
+    document.getElementById("whack-score").textContent = "0";
+    var t = WHACK_TIME;
+    document.getElementById("whack-time").textContent = t;
+    whackRunning = true;
+    clearInterval(whackLoop);
+    whackLoop = setInterval(function(){
+      t--;
+      document.getElementById("whack-time").textContent = t;
+      if(t <= 0){
+        clearInterval(whackLoop);
+        whackRunning = false;
+        endWhack();
+      }
+    }, 1000);
+    whackPop();
+    whackCount = setInterval(function(){
+      if(whackRunning) whackPop();
+    }, 800);
+  }
+  function endWhack(){
+    clearInterval(whackCount);
+    whackTimers.forEach(clearTimeout); whackTimers=[];
+    document.querySelectorAll("#whack-grid .hole").forEach(function(h){h.classList.remove("up");});
+    var o = document.getElementById("whack-overlay");
+    o.innerHTML = '<span class="big">🏆</span><h3>游戏结束</h3><p>你敲到了 <b style="color:var(--pumpkin)">'+whackScore+'</b> 分！</p><button class="btn btn-primary" data-start="whack">再来一局</button>';
+    o.style.display = "flex";
+    if(whackScore >= 100) sWin();
+  }
+
+  /* ================= CANDY CATCH ================= */
+  var CATCH_TIME = 30;
+  var catchScore = 0, catchRunning = false, catchLoop, spawn, catchItems=[];
+  var candies = ["🍬","🍭","🍫","🍩","🧁","🍡","🍪"];
+  function startCatch(){
+    catchScore = 0; catchRunning = true;
+    document.getElementById("catch-score").textContent = "0";
+    var t = CATCH_TIME;
+    document.getElementById("catch-time").textContent = t;
+    var stage = document.getElementById("catch-stage");
+    stage.querySelectorAll(".falling").forEach(function(e){e.remove();});
+    catchItems = [];
+    clearInterval(catchLoop); clearInterval(spawn);
+    catchLoop = setInterval(function(){
+      t--;
+      document.getElementById("catch-time").textContent = t;
+      if(t <= 0){ clearInterval(catchLoop); clearInterval(spawn); catchRunning=false; endCatch(); }
+    },1000);
+    spawn = setInterval(function(){
+      if(catchRunning) spawnFalling();
+    }, 460);
+    // place basket center
+    var basket = document.getElementById("basket");
+    basket.style.left = "50%";
+  }
+  function spawnFalling(){
+    var stage = document.getElementById("catch-stage");
+    var el = document.createElement("div");
+    var isBomb = Math.random() < 0.18;
+    el.className = "falling" + (isBomb ? " bomb":"");
+    el.textContent = isBomb ? "💣" : candies[Math.floor(Math.random()*candies.length)];
+    var sw = stage.clientWidth;
+    var x = 20 + Math.random()*(sw-40);
+    el.style.left = x+"px";
+    el.style.top = "-50px";
+    stage.appendChild(el);
+    var dur = 2200 + Math.random()*1400;
+    var item = {el:el, isBomb:isBomb, y:-50, vy:(stage.clientHeight+80)/dur, x:x};
+    catchItems.push(item);
+  }
+  function catchTick(){
+    var stage = document.getElementById("catch-stage");
+    if(!stage) return;
+    var basket = document.getElementById("basket");
+    var br = basket.getBoundingClientRect();
+    var sr = stage.getBoundingClientRect();
+    for(var i=catchItems.length-1;i>=0;i--){
+      var it = catchItems[i];
+      it.y += it.vy * 16.7;
+      it.el.style.top = it.y+"px";
+      var er = it.el.getBoundingClientRect();
+      // catch check: basket mouth
+      var bx = br.left + br.width/2;
+      var by = br.top;
+      if(er.bottom >= by && er.top <= by + 40 && Math.abs(er.left + er.width/2 - bx) < br.width/2 + 10){
+        if(it.isBomb){ catchScore -= 15; sBad(); toast("💥 炸弹！-15"); }
+        else { catchScore += 10; sGood(); }
+        if(catchScore<0)catchScore=0;
+        document.getElementById("catch-score").textContent = catchScore;
+        it.el.remove(); catchItems.splice(i,1);
+        continue;
+      }
+      if(it.y > stage.clientHeight + 40){
+        it.el.remove(); catchItems.splice(i,1);
+      }
+    }
+  }
+  function endCatch(){
+    var o = document.getElementById("catch-overlay");
+    o.innerHTML = '<span class="big">🏆</span><h3>游戏结束</h3><p>你收集到了 <b style="color:var(--pumpkin)">'+catchScore+'</b> 分糖果！</p><button class="btn btn-primary" data-start="catch">再来一局</button>';
+    o.style.display = "flex";
+    if(catchScore >= 100) sWin();
+  }
+  function bindCatchMove(){
+    var stage = document.getElementById("catch-stage");
+    var basket = document.getElementById("basket");
+    function moveTo(clientX){
+      var r = stage.getBoundingClientRect();
+      var half = 38;
+      var x = clientX - r.left;
+      x = Math.max(half, Math.min(r.width-half, x));
+      basket.style.left = x+"px";
+    }
+    stage.addEventListener("pointerdown", function(e){ moveTo(e.clientX); });
+    stage.addEventListener("pointermove", function(e){
+      if(e.pointerType==="touch" || e.buttons){ moveTo(e.clientX); }
+    });
+  }
+
+  /* ================= MEMORY ================= */
+  var memEmojis = ["👻","🎃","🍬","🧛","🦇","💀"];
+  var memMoves = 0, memPairs = 0, flipped=[], memLock=false;
+  function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; } return a; }
+  function buildMemory(){
+    var grid = document.getElementById("mem-grid");
+    grid.innerHTML = "";
+    var deck = shuffle(memEmojis.concat(memEmojis));
+    deck.forEach(function(e){
+      var c = document.createElement("div");
+      c.className = "mem-card";
+      c.innerHTML = '<div class="face back"></div><div class="face front">'+e+'</div>';
+      c.dataset.val = e;
+      c.addEventListener("click", function(){ flipCard(c); });
+      grid.appendChild(c);
+    });
+  }
+  function resetMemory(){
+    memMoves = 0; memPairs = 0; flipped=[]; memLock=false;
+    document.getElementById("mem-moves").textContent = "0";
+    document.getElementById("mem-pairs").textContent = "0/6";
+    buildMemory();
+  }
+  function flipCard(card){
+    if(memLock || card.classList.contains("flipped") || card.classList.contains("matched")) return;
+    card.classList.add("flipped");
+    sFlip();
+    flipped.push(card);
+    if(flipped.length === 2){
+      memMoves++;
+      document.getElementById("mem-moves").textContent = memMoves;
+      var a=flipped[0], b=flipped[1];
+      if(a.dataset.val === b.dataset.val){
+        memPairs++;
+        document.getElementById("mem-pairs").textContent = memPairs+"/6";
+        a.classList.add("matched"); b.classList.add("matched");
+        flipped = [];
+        sGood();
+        if(memPairs === 6){ sWin(); setTimeout(function(){ toast("🎉 太棒了！只用 "+memMoves+" 步"); }, 400); }
+      }else{
+        memLock = true;
+        setTimeout(function(){
+          a.classList.remove("flipped"); b.classList.remove("flipped");
+          flipped = []; memLock=false;
+        }, 800);
+      }
+    }
+  }
+
+  /* ================= QUIZ ================= */
+  var quizData = [
+    {e:"🎃", q:"万圣节最经典的南瓜灯叫做什么？", opts:["Jack-o'-Lantern 杰克灯","Pumpkin Pie","Lantern Pop","Glow Gourd"], a:0},
+    {e:"🕷️", q:"「不给糖就捣蛋」的英文是怎么说的？", opts:["Candy Please","Trick or Treat","Sweet or Sour","Boo or Chew"], a:1},
+    {e:"🧙", q:"传说中会骑扫帚飞行的角色是？", opts:["吸血鬼","狼人","女巫","木乃伊"], a:2},
+    {e:"🦇", q:"下面哪个不是万圣节的常见装扮？", opts:["幽灵","吸血鬼","圣诞老人","骷髅"], a:2},
+    {e:"🍬", q:"万圣节每年在哪一天庆祝？", opts:["12月25日","10月31日","8月15日","4月1日"], a:1}
+  ];
+  var quizScore=0, quizIndex=0;
+  function resetQuiz(){
+    quizScore=0; quizIndex=0;
+    document.getElementById("quiz-score").textContent = "0";
+    document.getElementById("quiz-bar").style.width = "0%";
+    renderQuiz();
+  }
+  function renderQuiz(){
+    var q = quizData[quizIndex];
+    document.getElementById("quiz-q").innerHTML = '<span class="emoji">'+q.e+'</span>'+q.q;
+    var opts = document.getElementById("quiz-opts");
+    opts.innerHTML = "";
+    q.opts.forEach(function(o,i){
+      var b = document.createElement("button");
+      b.className = "quiz-opt";
+      b.textContent = o;
+      b.addEventListener("click", function(){ answerQuiz(i,b); });
+      opts.appendChild(b);
+    });
+  }
+  function answerQuiz(i, btn){
+    var q = quizData[quizIndex];
+    var all = document.querySelectorAll("#quiz-opts .quiz-opt");
+    all.forEach(function(b){ b.disabled = true; });
+    if(i === q.a){
+      btn.classList.add("correct");
+      quizScore += 20;
+      sGood();
+    }else{
+      btn.classList.add("wrong");
+      all[q.a].classList.add("correct");
+      sBad();
+    }
+    document.getElementById("quiz-score").textContent = quizScore;
+    setTimeout(function(){
+      quizIndex++;
+      if(quizIndex >= quizData.length){
+        var o = document.getElementById("quiz-overlay");
+        var msg;
+        if(quizScore===100) msg = "满分！你是万圣大师！🎉";
+        else if(quizScore>=60) msg = "很不错，是万圣老手！";
+        else msg = "还得多参加几场派对哦～";
+        o.innerHTML = '<span class="big">🏆</span><h3>挑战结束</h3><p>得分 <b style="color:var(--pumpkin)">'+quizScore+'</b> / 100<br>'+msg+'</p><button class="btn btn-primary" data-start="quiz">再来一轮</button>';
+        o.style.display = "flex";
+        if(quizScore===100) sWin();
+        return;
+      }
+      document.getElementById("quiz-bar").style.width = ((quizIndex)/quizData.length*100)+"%";
+      renderQuiz();
+    }, 900);
+  }
+
+  /* ---------- Init ---------- */
+  buildWhack();
+  buildMemory();
+  bindCatchMove();
+  setInterval(catchTick, 16);
+
+  // warm audio on first tap (requires gesture)
+  document.addEventListener("pointerdown", function once(){
+    try{ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){}
+  }, {once:true});
+
+})();
+</script>
+</body>
+</html>
