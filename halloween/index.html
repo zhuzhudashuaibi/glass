@@ -340,10 +340,11 @@ body{
   font-size:44px;
   z-index:2;
   transform:translateY(120%);
-  transition:transform .16s cubic-bezier(.2,.9,.3,1.3);
+  opacity:0;
+  transition:transform .16s cubic-bezier(.2,.9,.3,1.3), opacity .14s ease;
   filter:drop-shadow(0 0 10px rgba(142,247,192,.5));
 }
-.hole.up .ghost{transform:translateY(8%);}
+.hole.up .ghost{transform:translateY(8%); opacity:1;}
 .hole .ghost.hit{
   animation:pop .28s ease forwards;
 }
@@ -701,11 +702,36 @@ body{
     document.getElementById("screen-"+id).classList.add("active");
     window.scrollTo(0,0);
   }
-  document.querySelectorAll("[data-game]").forEach(function(btn){
-    btn.addEventListener("click", function(){ showScreen(btn.dataset.game); });
-  });
-  document.querySelectorAll("[data-back]").forEach(function(b){
-    b.addEventListener("click", function(){ showScreen("home"); });
+  var overlayIds = {whack:"whack-overlay", catch:"catch-overlay", memory:"mem-overlay", quiz:"quiz-overlay"};
+  function showOverlay(g){ document.getElementById(overlayIds[g]).style.display = "flex"; }
+  function stopGames(){
+    whackRunning = false; catchRunning = false;
+    clearInterval(whackLoop); clearInterval(whackCount);
+    clearInterval(catchLoop); clearInterval(spawn);
+    if(whackTimers){ whackTimers.forEach(clearTimeout); whackTimers = []; }
+    document.querySelectorAll("#whack-grid .hole").forEach(function(h){ h.classList.remove("up"); });
+    var cs = document.getElementById("catch-stage");
+    if(cs) cs.querySelectorAll(".falling").forEach(function(e){ e.remove(); });
+    catchItems = [];
+  }
+  function route(el){
+    var game = el.closest("[data-game]");
+    if(game){ stopGames(); showOverlay(game.dataset.game); showScreen(game.dataset.game); return; }
+    var start = el.closest("[data-start]");
+    if(start){
+      var g = start.dataset.start;
+      document.getElementById(overlayIds[g]).style.display = "none";
+      if(g === "whack") startWhack();
+      else if(g === "catch") startCatch();
+      else if(g === "memory") resetMemory();
+      else if(g === "quiz") resetQuiz();
+      return;
+    }
+    if(el.closest("[data-back]")){ stopGames(); ["whack","catch","memory","quiz"].forEach(showOverlay); showScreen("home"); }
+  }
+  document.addEventListener("click", function(e){
+    var t = e.target;
+    if(t && t.closest) route(t);
   });
 
   var toastTimer;
@@ -716,19 +742,6 @@ body{
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function(){ t.classList.remove("show"); }, 1600);
   }
-
-  /* ---------- Generic start hook ---------- */
-  document.querySelectorAll("[data-start]").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var g = btn.dataset.start;
-      var overlays = {whack:"whack-overlay", catch:"catch-overlay", memory:"mem-overlay", quiz:"quiz-overlay"};
-      document.getElementById(overlays[g]).style.display = "none";
-      if(g === "whack") startWhack();
-      else if(g === "catch") startCatch();
-      else if(g === "memory") resetMemory();
-      else if(g === "quiz") resetQuiz();
-    });
-  });
 
   /* ================= WHACK A GHOST ================= */
   var WHACK_TIME = 30;
@@ -773,6 +786,7 @@ body{
     document.getElementById("whack-time").textContent = t;
     whackRunning = true;
     clearInterval(whackLoop);
+    clearInterval(whackCount);
     whackLoop = setInterval(function(){
       t--;
       document.getElementById("whack-time").textContent = t;
@@ -924,7 +938,11 @@ body{
         a.classList.add("matched"); b.classList.add("matched");
         flipped = [];
         sGood();
-        if(memPairs === 6){ sWin(); setTimeout(function(){ toast("🎉 太棒了！只用 "+memMoves+" 步"); }, 400); }
+        if(memPairs === 6){ sWin(); setTimeout(function(){
+          var o = document.getElementById("mem-overlay");
+          o.innerHTML = '<span class="big">🏆</span><h3>全部配对！</h3><p>你用了 <b style="color:var(--pumpkin)">'+memMoves+'</b> 步完成！</p><button class="btn btn-primary" data-start="memory">再来一局</button>';
+          o.style.display = "flex";
+        }, 500); }
       }else{
         memLock = true;
         setTimeout(function(){
